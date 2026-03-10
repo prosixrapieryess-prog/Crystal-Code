@@ -28,8 +28,10 @@ DISCORD="https://dcserver.link/crystalsmp"
 pixel_title() {
     echo -e "${CY}${BD}"
     echo '  ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗     ███████╗ ██████╗ ███████╗███╗  ██╗██████╗ ██╗   ██╗████████╗'
+    echo -e "${N}${PU}${BD}"
     echo '  ██╔══██╗██╔══██╗██╔═══██╗╚██╗██╔╝██║     ██╔════╝██╔════╝ ██╔════╝████╗ ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝'
     echo '  ██████╔╝██████╔╝██║   ██║ ╚███╔╝ ██║     █████╗  ██║  ███╗█████╗  ██╔██╗██║██║  ██║ ╚████╔╝    ██║   '
+    echo -e "${N}${YE}${BD}"
     echo '  ██╔═══╝ ██╔══██╗██║   ██║ ██╔██╗ ██║     ██╔══╝  ██║   ██║██╔══╝  ██║╚████║██║  ██║  ╚██╔╝     ██║   '
     echo '  ██║     ██║  ██║╚██████╔╝██╔╝ ██╗███████╗███████╗╚██████╔╝███████╗██║ ╚███║██████╔╝   ██║      ██║   '
     echo '  ╚═╝     ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚══════╝╚═╝  ╚══╝╚═════╝    ╚═╝      ╚═╝   '
@@ -65,7 +67,7 @@ progress_bar() {
 }
 
 fireworks() {
-    local s=('💥' '✨' '🎆' '🎇'')
+    local s=('💥' '✨' '🎆' '🎇' '⚡' '🌟' '💫' '🔥')
     for i in {1..10}; do
         printf "\033[%dG%s\n" "$(( RANDOM % 55 + 3 ))" "${s[$((RANDOM % 8))]}"
         sleep 0.05
@@ -136,7 +138,7 @@ main_menu() {
     echo -e "  ${CY}${BD}@ DEPLOYMENT SERVICES${N}"
     echo -e "  ${DM}└─${N}  ${YE}[1]${N} ${WH}VPS              ${YE}[5]${N} ${WH}Blueprint${N}"
     echo -e "      ${YE}[2]${N} ${WH}Panel            ${YE}[6]${N} ${WH}Cloudflare${N}"
-    echo -e "      ${YE}[3]${N} ${WH}Wings            ${YE}[7]${N} ${WH}VM / KVM${N}"
+    echo -e "      ${YE}[3]${N} ${WH}Wings            ${YE}[7]${N} ${WH}Proxmox${N}"
     echo ""
     echo -e "  ${CY}${BD}@ MAINTENANCE${N}"
     echo -e "  ${DM}└─${N}  ${YE}[4]${N} ${WH}Toolbox          ${YE}[8]${N} ${WH}Discord${N}"
@@ -148,28 +150,39 @@ main_menu() {
 }
 
 # ══════════════════════════════════════════════════════════
-#  [1]  VPS MENU
+#  [1]  VPS — directly launches VM/KVM installer
 # ══════════════════════════════════════════════════════════
 vps_menu() {
+    sub_header
+    section "🖥️   VPS — VM / KVM INSTALLER"
+    progress_bar "🔧  Loading KVM installer"
+    bash <(curl -fsSL https://raw.githubusercontent.com/vpscreate123-web/mainnemu/main/Mainmenu)
+    pause
+}
+
+# ══════════════════════════════════════════════════════════
+#  [7]  PROXMOX MENU  (Docker-based Proxmox VE)
+# ══════════════════════════════════════════════════════════
+proxmox_menu() {
     while true; do
         sub_header
-        section "🚀  VPS MANAGER"
-        echo -e "  ${YE}  1${N}  ${DM}│${N}  🐧  ${WH}Deploy Proxmox VE (Docker)${N}"
+        section "🐧  PROXMOX VE MANAGER"
+        echo -e "  ${YE}  1${N}  ${DM}│${N}  🚀  ${WH}Deploy Proxmox VE (Docker)${N}"
         tdiv
         echo -e "  ${YE}  2${N}  ${DM}│${N}  📋  ${WH}Show Running Containers${N}"
         tdiv
         echo -e "  ${YE}  3${N}  ${DM}│${N}  🛑  ${WH}Stop Proxmox Container${N}"
         tdiv
-        echo -e "  ${YE}  4${N}  ${DM}│${N}  🗑️   ${WH}Remove Proxmox Container${N}"
+        echo -e "  ${RE}  4${N}  ${DM}│${N}  🗑️   ${WH}Remove Proxmox Container${N}"
         tdiv
         echo -e "  ${RE}  0${N}  ${DM}│${N}  ⬅️   ${WH}Back to Main Menu${N}"
         div
-        printf "\n  ${GR}→${N} ${BD}${WH}VPS Command: ${N}"
-        read -r vc
+        printf "\n  ${GR}→${N} ${BD}${WH}Proxmox Command: ${N}"
+        read -r px
 
-        case $vc in
+        case $px in
             1)
-                sub_header; section "🐧  Deploying Proxmox VE..."
+                sub_header; section "🚀  Deploying Proxmox VE..."
                 progress_bar "📦  Pulling rtedpro/proxmox:9.0.11"
                 if docker run -itd \
                       --name proxmoxve \
@@ -550,11 +563,7 @@ while true; do
             pause ;;
         5) blueprint_menu ;;
         6) cloudflare_menu ;;
-        7)
-            sub_header; section "🖥️   VM / KVM Installer"
-            progress_bar "🔧  Loading KVM installer"
-            bash <(curl -fsSL https://raw.githubusercontent.com/vpscreate123-web/mainnemu/main/Mainmenu)
-            pause ;;
+        7) proxmox_menu ;;
         8)
             sub_header; section "💬  Discord Community"
             echo -e "  ${GR}${BD}  ${DISCORD}${N}"
