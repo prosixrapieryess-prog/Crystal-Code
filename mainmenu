@@ -133,52 +133,45 @@ main_menu() {
     sys_health
     echo ""
     echo -e "  ${CY}${BD}@ DEPLOYMENT SERVICES${N}"
-    echo -e "  ${DM}└─${N}  ${YE}[1]${N} ${WH}VPS              ${YE}[5]${N} ${WH}Blueprint${N}"
-    echo -e "      ${YE}[2]${N} ${WH}Panel            ${YE}[6]${N} ${WH}Cloudflare${N}"
-    echo -e "      ${YE}[3]${N} ${WH}Wings            ${YE}[7]${N} ${WH}Proxmox${N}"
-    echo ""
-    echo -e "  ${CY}${BD}@ MAINTENANCE${N}"
-    echo -e "  ${DM}└─${N}  ${YE}[4]${N} ${WH}Toolbox          ${YE}[8]${N} ${WH}Discord${N}"
+    echo -e "  ${DM}└─${N}  ${YE}[1]${N} ${WH}VPS              ${YE}[4]${N} ${WH}Toolbox${N}"
+    echo -e "      ${YE}[2]${N} ${WH}Panel            ${YE}[5]${N} ${WH}Blueprint${N}"
+    echo -e "      ${YE}[3]${N} ${WH}Wings            ${YE}[6]${N} ${WH}Discord${N}"
     echo ""
     printf  "                 ${BD}${RD}  ❮ [0] SHUTDOWN ❯  ${N}\n"
     echo ""
     div
-    printf "\n  ${GR}→${N} ${BD}${WH}Command (1-8): ${N}"
+    printf "\n  ${GR}→${N} ${BD}${WH}Command (1-6): ${N}"
 }
 
 # ══════════════════════════════════════════════════════════
-#  [1]  VPS — directly launches VM/KVM installer
+#  [1]  VPS MENU  (VM/KVM + Proxmox)
 # ══════════════════════════════════════════════════════════
 vps_menu() {
-    sub_header
-    section "🖥️   VPS — VM / KVM INSTALLER"
-    progress_bar "🔧  Loading KVM installer"
-    bash <(curl -fsSL https://raw.githubusercontent.com/vpscreate123-web/mainnemu/main/Mainmenu)
-    pause
-}
-
-# ══════════════════════════════════════════════════════════
-#  [7]  PROXMOX MENU  (Docker-based Proxmox VE)
-# ══════════════════════════════════════════════════════════
-proxmox_menu() {
     while true; do
         sub_header
-        section "🐧  PROXMOX VE MANAGER"
-        echo -e "  ${YE}  1${N}  ${DM}│${N}  🚀  ${WH}Deploy Proxmox VE (Docker)${N}"
+        section "🖥️   VPS MANAGER"
+        echo -e "  ${YE}  1${N}  ${DM}│${N}  🖥️   ${WH}VM / KVM Installer${N}"
         tdiv
-        echo -e "  ${YE}  2${N}  ${DM}│${N}  📋  ${WH}Show Running Containers${N}"
+        echo -e "  ${YE}  2${N}  ${DM}│${N}  🚀  ${WH}Deploy Proxmox VE (Docker)${N}"
         tdiv
-        echo -e "  ${YE}  3${N}  ${DM}│${N}  🛑  ${WH}Stop Proxmox Container${N}"
+        echo -e "  ${YE}  3${N}  ${DM}│${N}  📋  ${WH}Show Running Containers${N}"
         tdiv
-        echo -e "  ${RE}  4${N}  ${DM}│${N}  🗑️   ${WH}Remove Proxmox Container${N}"
+        echo -e "  ${YE}  4${N}  ${DM}│${N}  🛑  ${WH}Stop Proxmox Container${N}"
+        tdiv
+        echo -e "  ${RE}  5${N}  ${DM}│${N}  🗑️   ${WH}Remove Proxmox Container${N}"
         tdiv
         echo -e "  ${RE}  0${N}  ${DM}│${N}  ⬅️   ${WH}Back to Main Menu${N}"
         div
-        printf "\n  ${GR}→${N} ${BD}${WH}Proxmox Command: ${N}"
-        read -r px
+        printf "\n  ${GR}→${N} ${BD}${WH}VPS Command: ${N}"
+        read -r vc
 
-        case $px in
+        case $vc in
             1)
+                sub_header; section "🖥️   VM / KVM Installer"
+                progress_bar "🔧  Loading KVM installer"
+                bash <(curl -fsSL https://raw.githubusercontent.com/vpscreate123-web/mainnemu/main/Mainmenu)
+                pause ;;
+            2)
                 sub_header; section "🚀  Deploying Proxmox VE..."
                 progress_bar "📦  Pulling rtedpro/proxmox:9.0.11"
                 if docker run -itd \
@@ -203,18 +196,18 @@ proxmox_menu() {
                     echo -e "  ${DM}   Install: curl -fsSL https://get.docker.com | sh${N}"
                 fi
                 pause ;;
-            2)
+            3)
                 sub_header; section "📋  Running Containers"
                 docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null \
                     || echo -e "  ${RE}Docker not running or not installed.${N}"
                 pause ;;
-            3)
+            4)
                 sub_header; section "🛑  Stop Proxmox Container"
                 docker stop proxmoxve 2>/dev/null \
                     && echo -e "  ${GR}✔  Container stopped.${N}" \
                     || echo -e "  ${RE}❌  Not found or already stopped.${N}"
                 pause ;;
-            4)
+            5)
                 sub_header; section "🗑️   Remove Proxmox Container"
                 printf "  ${RE}Type 'yes' to confirm: ${N}"; read -r conf
                 if [[ "$conf" == "yes" ]]; then
@@ -455,7 +448,7 @@ cloudflare_menu() {
         progress_bar "🌐  Bringing tunnel online"
 
         if systemctl is-active --quiet cloudflared 2>/dev/null; then
-            echo -e "  ${GR}${BD}✅  Tunnel is ONLINE!${N}"; fireworks
+            echo -e "  ${GR}${BD}✅  Tunnel is ONLINE!${N}"
         else
             echo -e "  ${RE}❌  Service failed to start.${N}"
             echo -e "  ${DM}   Debug: sudo journalctl -u cloudflared -f${N}"
@@ -528,9 +521,7 @@ intro() {
     typewriter "  🛡️   Security modules loaded." "$GR"
     sleep 0.2
     typewriter "  🚀  All systems online!" "$YE"
-    sleep 0.4
-    fireworks
-    sleep 0.5
+    sleep 0.6
 }
 
 # ══════════════════════════════════════════════════════════
@@ -559,9 +550,7 @@ while true; do
             bash <(curl -s https://raw.githubusercontent.com/vpscreate123-web/4-tools/main/mainmenu)
             pause ;;
         5) blueprint_menu ;;
-        6) cloudflare_menu ;;
-        7) proxmox_menu ;;
-        8)
+        6)
             sub_header; section "💬  Discord Community"
             echo -e "  ${GR}${BD}  ${DISCORD}${N}"
             echo -e "  ${DM}  Copy the link and join the community!${N}"
@@ -571,10 +560,9 @@ while true; do
             pixel_title
             echo -e "  ${PU}${BD}Thanks for using ProXLegendYT NODE!${N}"
             typewriter "  💎  ProXLegendYT — Signing off... 🔥" "$GR"
-            fireworks
             sleep 1; echo ""; exit 0 ;;
         *)
-            echo -e "\n  ${RE}❌  Invalid — choose 0-8.${N}"
+            echo -e "\n  ${RE}❌  Invalid — choose 0-6.${N}"
             sleep 1.2 ;;
     esac
 done
