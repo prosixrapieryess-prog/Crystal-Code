@@ -167,7 +167,7 @@ while true; do
 
     case $choice in
         1)
-            echo -e "${G}https://discord.gg/2rYEHharqA${N}"
+            echo -e "${G}https://dcserver.link/crystalsmp${N}"
             pause
             ;;
         2)
