@@ -547,7 +547,7 @@ while true; do
         4)
             sub_header; section "🧰  Main Toolbox"
             progress_bar "🔧  Loading tools"
-            bash <(curl -s https://github.com/prosixrapieryess-prog/Host-Tools/main/mainmenu)
+            bash <(curl -s https://github.com/prosixrapieryess-prog/Host-Tools/blob/main/mainmenu)
             pause ;;
         5) blueprint_menu ;;
         6)
