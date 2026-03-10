@@ -1,176 +1,677 @@
 #!/usr/bin/env bash
 export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
-
 set -u
 
-# ---- COLORS ----
-C=$'\033[36m'
-G=$'\033[32m'
-R=$'\033[31m'
-B=$'\033[34m'
-Y=$'\033[33m'
-W=$'\033[97m'
-P=$'\033[35m'
-BLINK=$'\033[5m'
-N=$'\033[0m'
+# ══════════════════════════════════════════════
+#   COLORS & STYLES
+# ══════════════════════════════════════════════
+C=$'\033[36m'        # Cyan
+G=$'\033[32m'        # Green
+R=$'\033[31m'        # Red
+B=$'\033[34m'        # Blue
+Y=$'\033[33m'        # Yellow
+W=$'\033[97m'        # White
+P=$'\033[35m'        # Purple
+DIM=$'\033[2m'       # Dim
+BOLD=$'\033[1m'      # Bold
+BLINK=$'\033[5m'     # Blink
+BG_P=$'\033[45m'     # BG Purple
+BG_C=$'\033[46m'     # BG Cyan
+N=$'\033[0m'         # Reset
 
-# ---- TYPEWRITER EFFECT ----
+# ══════════════════════════════════════════════
+#   SPINNER ANIMATION
+# ══════════════════════════════════════════════
+spinner() {
+    local msg="$1"
+    local pid=$!
+    local frames=('⣾' '⣽' '⣻' '⢿' '⡿' '⣟' '⣯' '⣷')
+    local i=0
+    while kill -0 "$pid" 2>/dev/null; do
+        printf "\r  ${P}${frames[$i]}${N}  ${W}%s${N}" "$msg"
+        i=$(( (i+1) % ${#frames[@]} ))
+        sleep 0.08
+    done
+    printf "\r  ${G}✔${N}  ${W}%s${N}\n" "$msg"
+}
+
+# ══════════════════════════════════════════════
+#   TYPEWRITER EFFECT
+# ══════════════════════════════════════════════
 typewriter() {
-    text="$1"
-    delay=0.005
+    local text="$1"
+    local color="${2:-$W}"
+    local delay=0.018
+    printf "%s" "$color"
     for ((i=0; i<${#text}; i++)); do
         printf "%s" "${text:$i:1}"
         sleep $delay
     done
-    printf "\n"
+    printf "%s\n" "$N"
 }
 
-# ---- PROGRESS BAR ----
+# ══════════════════════════════════════════════
+#   GLITCH EFFECT (fast flicker on text)
+# ══════════════════════════════════════════════
+glitch_text() {
+    local text="$1"
+    local chars='@#$%&!?*'
+    local len=${#text}
+    for run in 1 2 3; do
+        local out=""
+        for ((i=0; i<len; i++)); do
+            if (( RANDOM % 4 == 0 )); then
+                out+="${chars:$((RANDOM % ${#chars})):1}"
+            else
+                out+="${text:$i:1}"
+            fi
+        done
+        printf "\r  ${P}%s${N}" "$out"
+        sleep 0.07
+    done
+    printf "\r  ${P}%s${N}\n" "$text"
+}
+
+# ══════════════════════════════════════════════
+#   FANCY PROGRESS BAR
+# ══════════════════════════════════════════════
 progress_bar() {
-    echo -e "${C}Initializing TYRKROX NODE...${N}"
-    for i in {1..30}; do
-        printf "${G}#${N}"
-        sleep 0.03
+    local label="${1:-Loading}"
+    local total=40
+    printf "\n  ${C}%s${N}\n" "$label"
+    printf "  ${DIM}["
+    for ((i=0; i<total; i++)); do printf " "; done
+    printf "]${N}"
+    printf "  ${DIM}[${N}"
+    for ((i=0; i<total; i++)); do
+        printf "${G}█${N}"
+        sleep 0.04
+    done
+    printf "${DIM}]${N}  ${G}100%%${N}\n"
+}
+
+# ══════════════════════════════════════════════
+#   MARQUEE BANNER
+# ══════════════════════════════════════════════
+marquee() {
+    local text="  🔥 ProXLegendYT | Powered by ProXLegendYT NODE | Discord: https://dcserver.link/crystalsmp 🔥  "
+    local width=60
+    local len=${#text}
+    for ((i=0; i<len-width; i++)); do
+        printf "\r  ${Y}%.${width}s${N}" "${text:$i}"
+        sleep 0.05
     done
     echo ""
-    for i in {0..100..10}; do
-        printf "\r${Y}Loading System: $i%%%${N}"
-        sleep 0.15
+}
+
+# ══════════════════════════════════════════════
+#   FIREWORKS ANIMATION
+# ══════════════════════════════════════════════
+fireworks() {
+    local shots=('💥' '✨' '🎆' '🎇' '⚡' '🌟' '💫')
+    local cols=60
+    for i in {1..12}; do
+        local col=$(( RANDOM % cols + 4 ))
+        local shot="${shots[$((RANDOM % ${#shots[@]}))]}"
+        printf "\033[%dG%s\n" "$col" "$shot"
+        sleep 0.06
     done
+}
+
+# ══════════════════════════════════════════════
+#   DIVIDER HELPERS
+# ══════════════════════════════════════════════
+divider() {
+    echo -e "  ${DIM}${P}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${N}"
+}
+
+thin_div() {
+    echo -e "  ${DIM}┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄${N}"
+}
+
+section_header() {
     echo ""
-    sleep 1
-}
-
-# ---- INTRO ----
-intro() {
-    clear
-    echo -e "${P}"
-    typewriter "██████╗ ██████╗  ██████╗ ██╗  ██╗██╗     ███████╗ ██████╗ ███████╗███╗   ██╗██████╗ ██╗   ██╗████████╗"
-    typewriter "██╔══██╗██╔══██╗██╔═══██╗╚██╗██╔╝██║     ██╔════╝██╔════╝ ██╔════╝████╗  ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝"
-    typewriter "██████╔╝██████╔╝██║   ██║ ╚███╔╝ ██║     █████╗  ██║  ███╗█████╗  ██╔██╗ ██║██║  ██║ ╚████╔╝    ██║"
-    typewriter "██╔═══╝ ██╔══██╗██║   ██║ ██╔██╗ ██║     ██╔══╝  ██║   ██║██╔══╝  ██║╚██╗██║██║  ██║  ╚██╔╝     ██║"
-    typewriter "██║     ██║  ██║╚██████╔╝██╔╝ ██╗███████╗███████╗╚██████╔╝███████╗██║ ╚████║██████╔╝   ██║      ██║"
-    typewriter "╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚═════╝    ╚═╝      ╚═╝"
-    echo -e "${N}"
-    echo ""
-    typewriter "💎 ProXLegendYT BOOTING..."
-    sleep 1
-    progress_bar
-    clear
-}
-
-# ---- HEADER ----
-
-display_header() {
-    clear
-    cat << "EOF"
-██████╗ ██████╗  ██████╗ ██╗  ██╗██╗     ███████╗ ██████╗ ███████╗███╗   ██╗██████╗ ██╗   ██╗████████╗
-██╔══██╗██╔══██╗██╔═══██╗╚██╗██╔╝██║     ██╔════╝██╔════╝ ██╔════╝████╗  ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝
-██████╔╝██████╔╝██║   ██║ ╚███╔╝ ██║     █████╗  ██║  ███╗█████╗  ██╔██╗ ██║██║  ██║ ╚████╔╝    ██║   
-██╔═══╝ ██╔══██╗██║   ██║ ██╔██╗ ██║     ██╔══╝  ██║   ██║██╔══╝  ██║╚██╗██║██║  ██║  ╚██╔╝     ██║   
-██║     ██║  ██║╚██████╔╝██╔╝ ██╗███████╗███████╗╚██████╔╝███████╗██║ ╚████║██████╔╝   ██║      ██║   
-╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚═════╝    ╚═╝      ╚═╝   
-                                                                                                    
-                    ProXLegendYT
-EOF
-    echo
-}
-
-header() {
-    echo -e "${P}${BLINK}💎 ProXLegendYT 💎${N}"
-    echo -e "${Y}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${N}"
+    echo -e "  ${P}┌──────────────────────────────────────────────────────────┐${N}"
+    printf "  ${P}│${N}  ${BOLD}${W}%-56s${N}  ${P}│${N}\n" "$1"
+    echo -e "  ${P}└──────────────────────────────────────────────────────────┘${N}"
     echo ""
 }
 
+# ══════════════════════════════════════════════
+#   PAUSE
+# ══════════════════════════════════════════════
 pause() {
     echo ""
-    read -p "${W}Press [Enter] to return...${N}" dummy
+    echo -e "  ${DIM}${Y}┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄${N}"
+    read -p "  ${W}↩  Press [Enter] to return...${N} " _dummy
 }
 
-# ---- PTERODACTYL MENU FUNCTION ----
+# ══════════════════════════════════════════════
+#   INTRO SEQUENCE
+# ══════════════════════════════════════════════
+intro() {
+    clear
+    echo ""
+    sleep 0.2
+
+    # Glitch reveal of brand name
+    for run in 1 2 3 4 5; do
+        local glitch_chars='@#$%!?*^~'
+        local brand="TYRKROX  LEGENDYT"
+        local out=""
+        for ((i=0; i<${#brand}; i++)); do
+            if (( RANDOM % 3 == 0 )); then
+                out+="${glitch_chars:$((RANDOM % ${#glitch_chars})):1}"
+            else
+                out+="${brand:$i:1}"
+            fi
+        done
+        printf "\r  ${P}${BOLD}%s${N}" "$out"
+        sleep 0.08
+    done
+    printf "\r  ${P}${BOLD}TYRKROX  LEGENDYT${N}\n\n"
+
+    # ASCII Banner
+    echo -e "${P}${BOLD}"
+    cat << 'EOF'
+  ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗     ███████╗ ██████╗ ███████╗███╗   ██╗██████╗ ██╗   ██╗████████╗
+  ██╔══██╗██╔══██╗██╔═══██╗╚██╗██╔╝██║     ██╔════╝██╔════╝ ██╔════╝████╗  ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝
+  ██████╔╝██████╔╝██║   ██║ ╚███╔╝ ██║     █████╗  ██║  ███╗█████╗  ██╔██╗ ██║██║  ██║ ╚████╔╝    ██║
+  ██╔═══╝ ██╔══██╗██║   ██║ ██╔██╗ ██║     ██╔══╝  ██║   ██║██╔══╝  ██║╚██╗██║██║  ██║  ╚██╔╝     ██║
+  ██║     ██║  ██║╚██████╔╝██╔╝ ██╗███████╗███████╗╚██████╔╝███████╗██║ ╚████║██████╔╝   ██║      ██║
+  ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚═════╝    ╚═╝      ╚═╝
+EOF
+    echo -e "${N}"
+
+    echo ""
+    typewriter  "  💎  ProXLegendYT — BOOTING SYSTEM NODE..." "$P"
+    sleep 0.4
+    progress_bar "  🔧  Initializing TYRKROX NODE"
+    sleep 0.2
+
+    typewriter  "  🌐  Establishing Secure Connection..." "$C"
+    sleep 0.3
+    typewriter  "  🛡️   Loading Security Modules..." "$G"
+    sleep 0.3
+    typewriter  "  🚀  All Systems Online!" "$Y"
+    sleep 0.5
+
+    fireworks
+    sleep 0.6
+    clear
+}
+
+# ══════════════════════════════════════════════
+#   SYSTEM STATS
+# ══════════════════════════════════════════════
+get_cpu() {
+    # Returns integer CPU usage %
+    local cpu
+    cpu=$(top -bn1 2>/dev/null | grep -i "cpu(s)\|Cpu" | head -1 | awk '{
+        for(i=1;i<=NF;i++) if($i ~ /^[0-9.]+$/ && $(i+1) ~ /us/) { printf "%.0f", $i; exit }
+    }')
+    # fallback via /proc/stat
+    if [[ -z "$cpu" ]]; then
+        local line1 line2
+        read -r line1 < /proc/stat
+        sleep 0.2
+        read -r line2 < /proc/stat
+        local arr1=($line1) arr2=($line2)
+        local idle1=$((arr1[4])) idle2=$((arr2[4]))
+        local total1=0 total2=0
+        for v in "${arr1[@]:1}"; do (( total1+=v )); done
+        for v in "${arr2[@]:1}"; do (( total2+=v )); done
+        local dtotal=$(( total2 - total1 )) didle=$(( idle2 - idle1 ))
+        if (( dtotal > 0 )); then
+            cpu=$(( (dtotal - didle) * 100 / dtotal ))
+        else
+            cpu=0
+        fi
+    fi
+    echo "${cpu:-0}"
+}
+
+get_ram() {
+    free 2>/dev/null | awk '/^Mem:/ {printf "%.0f", $3/$2*100}'
+}
+
+get_net() {
+    if ping -c1 -W1 8.8.8.8 &>/dev/null 2>&1; then
+        echo "CONNECTED"
+    else
+        echo "OFFLINE"
+    fi
+}
+
+# ══════════════════════════════════════════════
+#   PIXEL TITLE (block-char retro font)
+# ══════════════════════════════════════════════
+draw_pixel_title() {
+    # "PROXLEGEND" in chunky pixel blocks, tri-color like the reference image
+    echo -e "${C}${BOLD}"
+    echo '  ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗     ███████╗ ██████╗ ███████╗███╗   ██╗██████╗'
+    echo -e "${N}${P}${BOLD}"
+    echo '  ██╔══██╗██╔══██╗██╔═══██╗╚██╗██╔╝██║     ██╔════╝██╔════╝ ██╔════╝████╗  ██║██╔══██╗'
+    echo '  ██████╔╝██████╔╝██║   ██║ ╚███╔╝ ██║     █████╗  ██║  ███╗█████╗  ██╔██╗ ██║██║  ██║'
+    echo -e "${N}${Y}${BOLD}"
+    echo '  ██╔═══╝ ██╔══██╗██║   ██║ ██╔██╗ ██║     ██╔══╝  ██║   ██║██╔══╝  ██║╚██╗██║██║  ██║'
+    echo '  ██║     ██║  ██║╚██████╔╝██╔╝ ██╗███████╗███████╗╚██████╔╝███████╗██║ ╚████║██████╔╝'
+    echo '  ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚═════╝'
+    echo -e "${N}"
+}
+
+# ══════════════════════════════════════════════
+#   MAIN MENU PAGE  (Coding-Hub style)
+# ══════════════════════════════════════════════
+draw_main_menu() {
+    clear
+    draw_pixel_title
+
+    # ── System Health Bar ────────────────────────
+    local cpu ram net nc_color
+    cpu=$(get_cpu)
+    ram=$(get_ram)
+    net=$(get_net)
+
+    if [[ "$net" == "CONNECTED" ]]; then nc_color="${G}"; else nc_color="${R}"; fi
+
+    # Color CPU/RAM based on load
+    local cpu_c="${G}" ram_c="${G}"
+    (( cpu > 80 )) && cpu_c="${R}" || (( cpu > 50 )) && cpu_c="${Y}"
+    (( ram > 80 )) && ram_c="${R}" || (( ram > 50 )) && ram_c="${Y}"
+
+    echo -e "  ${BOLD}${W}System Health:${N}"
+    echo -e "  CPU: ${cpu_c}${BOLD}${cpu}%${N}   RAM: ${ram_c}${BOLD}${ram}%${N}   Network: ${nc_color}${BOLD}${net}${N}"
+    echo ""
+
+    # ── Deployment Services ──────────────────────
+    echo -e "  ${C}${BOLD}@ DEPLOYMENT SERVICES${N}"
+    echo -e "  ${DIM}└─${N}  ${Y}[1]${N} ${W}VPS              ${Y}[5]${N} ${W}Blueprint${N}"
+    echo -e "      ${Y}[2]${N} ${W}Panel            ${Y}[6]${N} ${W}Cloudflare${N}"
+    echo -e "      ${Y}[3]${N} ${W}Wings            ${Y}[7]${N} ${W}VM / KVM${N}"
+    echo ""
+
+    # ── Maintenance ──────────────────────────────
+    echo -e "  ${C}${BOLD}@ MAINTENANCE${N}"
+    echo -e "  ${DIM}└─${N}  ${Y}[4]${N} ${W}Toolbox          ${Y}[8]${N} ${W}Discord${N}"
+    echo ""
+
+    # ── Shutdown button ──────────────────────────
+    echo -e "                    ${BOLD}${BG_R}\033[41m  ❮ [0] SHUTDOWN ❯  ${N}"
+    echo ""
+    echo -e "  ${DIM}────────────────────────────────────────────────${N}"
+
+    # ── Prompt ───────────────────────────────────
+    printf "\n  ${G}→${N} ${BOLD}${W}Command (1-8): ${N}"
+}
+
+# alias so submenus can still call header()
+header() {
+    clear
+    draw_pixel_title
+    echo -e "  ${P}┌──────────────────────────────────────────────────────────────┐${N}"
+    echo -e "  ${P}│${N}   ${BLINK}${P}💎${N}  ${BOLD}${W}ProXLegendYT${N}   ${DIM}|${N}  ${C}TYRKROX NODE v3.0${N}   ${DIM}|${N}  ${G}● ONLINE${N}   ${P}│${N}"
+    echo -e "  ${P}└──────────────────────────────────────────────────────────────┘${N}"
+    echo ""
+}
+
+# kept for compatibility
+display_header() { draw_pixel_title; }
+
+# ══════════════════════════════════════════════
+#   PTERODACTYL MENU
+# ══════════════════════════════════════════════
 ptero_menu() {
     while true; do
         clear
-        echo "========================================="
-        echo "   PTERODACTYL CONTROL CENTER v2.1"
-        echo "========================================="
+        header
+
+        section_header "🦕  PTERODACTYL CONTROL CENTER v2.1"
+
+        echo -e "  ${C}  1${N}  ${DIM}│${N}  🧩  ${W}Install Panel${N}"
+        thin_div
+        echo -e "  ${C}  2${N}  ${DIM}│${N}  👤  ${W}Create User${N}"
+        thin_div
+        echo -e "  ${C}  3${N}  ${DIM}│${N}  🔄  ${W}Update Panel${N}"
+        thin_div
+        echo -e "  ${C}  4${N}  ${DIM}│${N}  🔒  ${W}Install SSL${N}"
+        thin_div
+        echo -e "  ${C}  5${N}  ${DIM}│${N}  🗑️   ${W}Uninstall Panel${N}"
+        thin_div
+        echo -e "  ${R}  0${N}  ${DIM}│${N}  ⬅️   ${W}Back to Main Menu${N}"
+        divider
         echo ""
-        echo "1) Install Panel"
-        echo "2) Create User"
-        echo "3) Update Panel"
-        echo "4) Install SSL"
-        echo "5) Uninstall Panel"
-        echo "6) Back to Main Menu"
-        echo ""
-        read -p "Select option: " opt
+        printf "  ${Y}➤ Select option: ${N}"
+        read -r opt
 
         case $opt in
             1)
+                section_header "🧩  Installing Pterodactyl Panel..."
+                progress_bar "  📦  Fetching installer"
                 bash <(curl -fsSL https://raw.githubusercontent.com/nobita329/ptero/main/ptero/panel/pterodactyl/install.sh)
-                read -p "Press Enter..."
+                pause
                 ;;
             2)
+                section_header "👤  Creating Panel User..."
                 cd /var/www/pterodactyl 2>/dev/null && php artisan p:user:make
-                read -p "Press Enter..."
+                pause
                 ;;
             3)
-                cd /var/www/pterodactyl || { echo "Panel not installed!"; sleep 2; continue; }
+                section_header "🔄  Updating Pterodactyl Panel..."
+                cd /var/www/pterodactyl || { echo -e "  ${R}❌  Panel not installed!${N}"; sleep 2; continue; }
+                progress_bar "  📥  Downloading latest release"
                 php artisan down
                 curl -Lo panel.tar.gz https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz
                 tar -xzvf panel.tar.gz
                 COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
                 php artisan migrate --seed --force
                 php artisan up
-                read -p "Press Enter..."
+                echo -e "\n  ${G}✔  Panel updated successfully!${N}"
+                pause
                 ;;
             4)
+                section_header "🔒  Installing SSL Certificate..."
+                progress_bar "  🔐  Setting up SSL"
                 bash <(curl -fsSL https://raw.githubusercontent.com/nobita329/ptero/main/ptero/panel/pterodactyl/ssl.sh)
-                read -p "Press Enter..."
+                pause
                 ;;
             5)
-                rm -rf /var/www/pterodactyl
-                echo "Panel Removed."
+                section_header "🗑️   Uninstalling Pterodactyl Panel"
+                echo -e "  ${R}${BOLD}⚠️   WARNING: This will permanently delete the panel!${N}"
+                echo ""
+                printf "  ${Y}➤ Type 'yes' to confirm: ${N}"
+                read -r confirm
+                if [[ "$confirm" == "yes" ]]; then
+                    progress_bar "  🗑️   Removing files"
+                    rm -rf /var/www/pterodactyl
+                    echo -e "\n  ${G}✔  Panel removed successfully.${N}"
+                else
+                    echo -e "\n  ${C}ℹ️   Operation cancelled.${N}"
+                fi
                 sleep 2
                 ;;
-            6)
-                break
-                ;;
-            *)
-                echo "Invalid option"
-                sleep 1
-                ;;
+            0) break ;;
+            *) echo -e "  ${R}❌  Invalid option!${N}"; sleep 1 ;;
         esac
     done
 }
 
-# ---- START ----
-intro
+# ══════════════════════════════════════════════
+#   BLUEPRINT INSTALLER (option 6)
+# ══════════════════════════════════════════════
+run_blueprint() {
+    PT_DIR="/var/www/pterodactyl"
 
-# ---- MAIN LOOP ----
-while true; do
+    if [ "$EUID" -ne 0 ]; then
+        echo -e "  ${R}❌  Error: Please run as root (sudo bash $0)${N}"
+        return
+    fi
+
     clear
     header
+    section_header "🔷  BLUEPRINT v3.0 AUTO-INSTALLER & FIXER"
 
-    echo -e "${C} 1) ${W}Discord Server Link${N}"
-    echo -e "${C} 2) ${W}Proxmox VE (Docker) Install 🚀${N}"
-    echo -e "${C} 3) ${W}VM/KVM Installer${N}"
-    echo -e "${C} 4) ${W}Pterodactyl Panel Installer${N}"
-    echo -e "${C} 5) ${W}Wings Installer${N}"
-    echo -e "${C} 6) ${W}Blueprint + Addon Installer${N}"
-    echo -e "${C} 7) ${W}installing Cloudflare${N}"
-    echo -e "${C} 8) ${W}Main tools ${N}"
-    echo -e "${R} 0) Exit${N}"
+    echo -e "  ${Y}⚠️   Target Directory:${N} ${C}$PT_DIR${N}"
+    typewriter "  ⏳  Starting automated sequence in 3 seconds..." "$W"
+    sleep 3
+
+    # 1
+    echo ""
+    echo -e "  ${B}[1/7]${N} ${W}🔍  Checking Environment...${N}"
+    if [ ! -d "$PT_DIR" ]; then
+        echo -e "  ${R}❌  Pterodactyl directory not found!${N}"; return
+    fi
+    echo -e "  ${G}✔   Pterodactyl found.${N}"
+
+    # 2
+    echo ""
+    echo -e "  ${B}[2/7]${N} ${W}📦  Installing Dependencies...${N}"
+    (apt update -y -q && apt install -y curl wget unzip ca-certificates git gnupg zip -q) &
+    spinner "Installing system packages"
+    echo -e "  ${G}✔   System packages ready.${N}"
+
+    # 3
+    echo ""
+    echo -e "  ${B}[3/7]${N} ${W}🟢  Setting up Node.js 20 & Yarn...${N}"
+    (
+        mkdir -p /etc/apt/keyrings
+        curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+        echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
+        apt update -y -q && apt install -y nodejs -q
+        npm i -g yarn
+    ) &
+    spinner "Configuring Node.js environment"
+    echo -e "  ${G}✔   Node environment ready.${N}"
+
+    # 4
+    echo ""
+    echo -e "  ${B}[4/7]${N} ${W}⬇️   Downloading Blueprint Framework...${N}"
+    cd "$PT_DIR"
+    DOWNLOAD_URL=$(curl -s https://api.github.com/repos/BlueprintFramework/framework/releases/latest | grep 'browser_download_url' | grep 'release.zip' | cut -d '"' -f 4)
+    (wget -q "$DOWNLOAD_URL" -O "$PT_DIR/release.zip" && unzip -o -q release.zip) &
+    spinner "Downloading & extracting Blueprint"
+    echo -e "  ${G}✔   Files extracted.${N}"
+
+    # 5
+    echo ""
+    echo -e "  ${B}[5/7]${N} ${W}⚙️   Configuring Blueprint...${N}"
+    cat > "$PT_DIR/.blueprintrc" << 'BPRC'
+WEBUSER="www-data";
+OWNERSHIP="www-data:www-data";
+USERSHELL="/bin/bash";
+BPRC
+    chmod +x "$PT_DIR/blueprint.sh"
+    echo -e "  ${G}✔   Configuration applied.${N}"
+
+    # 6
+    echo ""
+    echo -e "  ${B}[6/7]${N} ${W}🚀  Running Internal Installer...${N}"
+    bash "$PT_DIR/blueprint.sh"
+
+    # 7
+    echo ""
+    echo -e "  ${B}[7/7]${N} ${W}🛠️   Running Auto-Fix Diagnostics...${N}"
+    (
+        chown -R www-data:www-data "$PT_DIR"
+        find "$PT_DIR" -type d -exec chmod 755 {} \;
+        find "$PT_DIR" -type f -exec chmod 644 {} \;
+        chmod +x "$PT_DIR/artisan" "$PT_DIR/blueprint.sh" 2>/dev/null
+        yarn install --production --silent
+        php artisan view:clear && php artisan config:clear && php artisan route:clear
+    ) &
+    spinner "Fixing permissions & clearing cache"
 
     echo ""
-    read -p "${Y}Select an option [1-9]: ${N}" choice
+    divider
+    echo -e "  ${G}${BOLD}🎉  COMPLETED SUCCESSFULLY!${N}"
+    echo -e "  ${W}   Blueprint installed · Permissions fixed · Cache cleared${N}"
+    divider
+}
+
+# ══════════════════════════════════════════════
+#   CLOUDFLARE SUBMENU (option 7)
+# ══════════════════════════════════════════════
+run_cloudflare() {
+    cf_show_header() {
+        clear
+        header
+        local s_status="${DIM}NOT INSTALLED${N}"
+        local s_pid="${DIM}---${N}"
+        local s_uptime="${DIM}---${N}"
+        local arch
+        arch=$(dpkg --print-architecture 2>/dev/null || uname -m)
+
+        if command -v cloudflared &>/dev/null; then
+            if systemctl is-active --quiet cloudflared; then
+                s_status="${G}ACTIVE ● RUNNING${N}"
+                s_pid="${W}$(pgrep -x cloudflared 2>/dev/null || echo '---')${N}"
+                s_uptime="$(systemctl show -p ActiveEnterTimestamp cloudflared 2>/dev/null | cut -d'=' -f2 | cut -d' ' -f2-3)"
+            else
+                s_status="${R}INACTIVE ○ STOPPED${N}"
+            fi
+        fi
+
+        echo -e "  ${P}┌──────────────────────────────────────────────────────────┐${N}"
+        echo -e "  ${P}│${N}  ${BOLD}${C}☁️   CLOUDFLARED TUNNEL MANAGER${N}   ${DIM}v3.0 Premium${N}        ${P}│${N}"
+        echo -e "  ${P}└──────────────────────────────────────────────────────────┘${N}"
+        echo ""
+        echo -e "  ${C}SYSTEM STATUS${N}"
+        thin_div
+        echo -e "  ${DIM}🖥  Architecture :${N} ${W}$arch${N}"
+        echo -e "  ${DIM}🔴  Service      :${N} $s_status"
+        echo -e "  ${DIM}🔢  Process ID   :${N} $s_pid"
+        echo -e "  ${DIM}⏱  Last Started :${N} ${C}${s_uptime:-N/A}${N}"
+        divider
+        echo ""
+    }
+
+    cf_install() {
+        cf_show_header
+        section_header "⚡  CLOUDFLARE INSTALL SEQUENCE"
+
+        echo -e "  ${C}[1/5]${N} ${W}🔑  Configuring Repository...${N}"
+        (
+            sudo mkdir -p --mode=0755 /usr/share/keyrings
+            curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
+            echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared any main' | sudo tee /etc/apt/sources.list.d/cloudflared.list >/dev/null
+        ) &
+        spinner "Adding Cloudflare APT repo"
+
+        echo ""
+        echo -e "  ${C}[2/5]${N} ${W}📦  Installing Binary...${N}"
+        (sudo apt-get update -qq >/dev/null && sudo apt-get install -y cloudflared -qq >/dev/null 2>&1) &
+        spinner "Installing cloudflared binary"
+
+        if ! command -v cloudflared &>/dev/null; then
+            echo -e "  ${R}❌  Binary installation failed!${N}"
+            pause; return
+        fi
+        echo -e "  ${G}✔   Binary installed.${N}"
+
+        echo ""
+        echo -e "  ${C}[3/5]${N} ${W}🧹  Removing Conflicting Services...${N}"
+        if systemctl list-units --type=service 2>/dev/null | grep -q cloudflared; then
+            (sudo cloudflared service uninstall >/dev/null 2>&1) &
+            spinner "Cleaning old services"
+        else
+            echo -e "  ${DIM}   No existing service found. Skipping.${N}"
+        fi
+
+        echo ""
+        echo -e "  ${Y}┌────────────────────────────────────────────────────────┐${N}"
+        echo -e "  ${Y}│${N}  ${BOLD}🔐  ACTION REQUIRED${N}                                     ${Y}│${N}"
+        echo -e "  ${Y}│${N}  Paste your ${C}Tunnel Token${N} below.                         ${Y}│${N}"
+        echo -e "  ${Y}│${N}  ${DIM}(You can paste the full 'sudo cloudflared...' cmd)${N}     ${Y}│${N}"
+        echo -e "  ${Y}└────────────────────────────────────────────────────────┘${N}"
+        echo ""
+        printf "  ${P}➤  TOKEN: ${N}"
+        read -r USER_TOKEN
+
+        CLEAN_TOKEN=$(echo "$USER_TOKEN" | sed 's/sudo cloudflared service install //g' | sed 's/cloudflared service install //g' | xargs)
+
+        if [[ -z "$CLEAN_TOKEN" ]]; then
+            echo -e "  ${R}❌  Token cannot be empty!${N}"; pause; return
+        fi
+
+        echo ""
+        echo -e "  ${C}[4/5]${N} ${W}🔗  Registering Tunnel Service...${N}"
+        sudo cloudflared service install "$CLEAN_TOKEN"
+
+        echo ""
+        echo -e "  ${C}[5/5]${N} ${W}⏳  Waiting for service to initialize...${N}"
+        progress_bar "  🌐  Bringing tunnel online"
+
+        echo ""
+        if systemctl is-active --quiet cloudflared; then
+            echo -e "  ${G}${BOLD}✅  SUCCESS: Tunnel is Online & Stable!${N}"
+            fireworks
+        else
+            echo -e "  ${R}${BOLD}❌  ERROR: Service failed to start.${N}"
+            echo -e "  ${DIM}   Debug: sudo journalctl -u cloudflared -f${N}"
+        fi
+        pause
+    }
+
+    cf_uninstall() {
+        cf_show_header
+        section_header "🗑️   CLOUDFLARE UNINSTALL"
+        echo -e "  ${R}${BOLD}⚠️   WARNING: This removes the tunnel service & binary!${N}"
+        echo ""
+        printf "  ${R}➤  Type 'yes' to confirm removal: ${N}"
+        read -r confirm
+        if [[ "$confirm" =~ ^[Yy][Ee][Ss]$ ]]; then
+            echo ""
+            (
+                sudo cloudflared service uninstall >/dev/null 2>&1
+                sudo apt-get remove -y cloudflared -qq >/dev/null 2>&1
+                sudo rm -f /etc/apt/sources.list.d/cloudflared.list
+                sudo rm -f /usr/share/keyrings/cloudflare-main.gpg
+            ) &
+            spinner "Removing Cloudflared completely"
+            echo -e "\n  ${G}✔   Cloudflared completely removed.${N}"
+        else
+            echo -e "\n  ${C}ℹ️   Operation cancelled.${N}"
+        fi
+        sleep 2
+    }
+
+    while true; do
+        cf_show_header
+        echo -e "  ${W}${BOLD}AVAILABLE OPERATIONS:${N}"
+        echo ""
+        echo -e "  ${G}  1${N}  ${DIM}│${N}  ☁️   ${W}Install / Update Tunnel${N}  ${DIM}(Auto-Fix)${N}"
+        thin_div
+        echo -e "  ${R}  2${N}  ${DIM}│${N}  🗑️   ${W}Uninstall Completely${N}     ${DIM}(Remove All)${N}"
+        thin_div
+        echo -e "  ${DIM}  0${N}  ${DIM}│${N}  ⬅️   ${W}Back to Main Menu${N}"
+        divider
+        echo ""
+        printf "  ${P}root@cloudflared:~# ${N}"
+        read -r cf_choice
+
+        case $cf_choice in
+            1) cf_install ;;
+            2) cf_uninstall ;;
+            0) break ;;
+            *) echo -e "  ${R}❌  Invalid option${N}"; sleep 1 ;;
+        esac
+    done
+}
+
+# ══════════════════════════════════════════════
+#   RUN INTRO
+# ══════════════════════════════════════════════
+intro
+
+# ══════════════════════════════════════════════
+#   MAIN LOOP  —  Coding-Hub style dashboard
+# ══════════════════════════════════════════════
+# Menu map:
+#   DEPLOYMENT SERVICES     MAINTENANCE
+#   [1] VPS (Proxmox)       [4] Toolbox
+#   [2] Panel (Ptero)       [8] Discord
+#   [3] Wings
+#   [5] Blueprint
+#   [6] Cloudflare
+#   [7] VM / KVM
+#   [0] SHUTDOWN
+# ═══════════════════════════════════════════════
+
+# Add missing BG_R color
+BG_R=$'\033[41m'
+
+while true; do
+    draw_main_menu
+    read -r choice
 
     case $choice in
+
+        # ── [1] VPS ──────────────────────────────
         1)
-            echo -e "${G}https://dcserver.link/crystalsmp${N}"
-            pause
-            ;;
-        2)
+            clear; header
+            section_header "🚀  VPS — Proxmox VE Docker Deploy"
+            progress_bar "  📦  Pulling Proxmox container image"
             docker run -itd \
               --name proxmoxve \
               --hostname pve \
@@ -185,342 +686,80 @@ while true; do
               -p 8006:8006 \
               --restart unless-stopped \
               rtedpro/proxmox:9.0.11
+            echo -e "\n  ${G}✔  Container launched!  Access → ${C}https://YOUR_IP:8006${N}"
             pause
             ;;
-        3)
-            bash <(curl -fsSL https://raw.githubusercontent.com/vpscreate123-web/mainnemu/main/Mainmenu)
-            pause
-            ;;
-        4)
+
+        # ── [2] Panel (Pterodactyl) ───────────────
+        2)
             ptero_menu
             ;;
-        5)
+
+        # ── [3] Wings ────────────────────────────
+        3)
+            clear; header
+            section_header "🪽  Wings Installer"
+            progress_bar "  📦  Fetching Wings installer"
             bash <(curl -fsSL https://raw.githubusercontent.com/nobita329/ptero/main/ptero/wings/install.sh)
             pause
             ;;
-        6) #!/bin/bash
 
-# ==================================================
-#  BLUEPRINT v3.0 AUTO-RUN (INSTALL + FIX)
-# ==================================================
-
-# --- COLORS ---
-R="\e[31m"; G="\e[32m"; Y="\e[33m"; B="\e[34m"; C="\e[36m"; W="\e[37m"; N="\e[0m"
-
-# --- CONFIG ---
-PT_DIR="/var/www/pterodactyl"
-
-# --- 1. ROOT CHECK ---
-if [ "$EUID" -ne 0 ]; then
-    echo -e "${R}❌ Error: Please run as root (sudo bash $0)${N}"
-    exit 1
-fi
-
-# --- 2. HEADER ---
-clear
-echo -e "${B}╔══════════════════════════════════════════════════════╗${N}"
-echo -e "${B}║${W}    🚀 BLUEPRINT v3.0 AUTO-INSTALLER & FIXER          ${B}║${N}"
-echo -e "${B}╚══════════════════════════════════════════════════════╝${N}"
-echo
-echo -e "${Y}⚠️  Target Directory:${N} ${C}$PT_DIR${N}"
-echo -e "${W}Starting automated sequence in 3 seconds...${N}"
-sleep 3
-
-# --- 3. SYSTEM PREP ---
-echo -e "\n${B}[1/7] Checking Environment...${N}"
-if [ ! -d "$PT_DIR" ]; then
-    echo -e "${R}❌ Pterodactyl directory not found!${N}"
-    exit 1
-fi
-echo -e "${G}✔ Pterodactyl found.${N}"
-
-echo -e "\n${B}[2/7] Installing Dependencies...${N}"
-apt update -y -q
-apt install -y curl wget unzip ca-certificates git gnupg zip -q
-echo -e "${G}✔ System packages ready.${N}"
-
-# --- 4. NODE.JS SETUP ---
-echo -e "\n${B}[3/7] Setting up Node.js 20 & Yarn...${N}"
-mkdir -p /etc/apt/keyrings
-curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
-apt update -y -q
-apt install -y nodejs -q
-npm i -g yarn
-echo -e "${G}✔ Node environment ready.${N}"
-
-# --- 5. BLUEPRINT SETUP ---
-echo -e "\n${B}[4/7] Downloading Blueprint Framework...${N}"
-cd "$PT_DIR"
-DOWNLOAD_URL=$(curl -s https://api.github.com/repos/BlueprintFramework/framework/releases/latest | grep 'browser_download_url' | grep 'release.zip' | cut -d '"' -f 4)
-wget -q "$DOWNLOAD_URL" -O "$PT_DIR/release.zip"
-unzip -o -q release.zip
-echo -e "${G}✔ Files extracted.${N}"
-
-echo -e "\n${B}[5/7] Configuring Blueprint...${N}"
-cat <<EOF > "$PT_DIR/.blueprintrc"
-WEBUSER="www-data";
-OWNERSHIP="www-data:www-data";
-USERSHELL="/bin/bash";
-EOF
-chmod +x "$PT_DIR/blueprint.sh"
-echo -e "${G}✔ Configuration applied.${N}"
-
-# --- 6. INSTALLATION ---
-echo -e "\n${B}[6/7] Running Internal Installer...${N}"
-# We execute the blueprint script. If it asks for prompts, this usually just runs through.
-bash "$PT_DIR/blueprint.sh"
-
-# --- 7. AUTO-FIX (THE v3.0 FEATURE) ---
-echo -e "\n${B}[7/7] Running Auto-Fix Diagnostics...${N}"
-
-echo -e "   ${Y}➜ Fixing Permissions...${N}"
-chown -R www-data:www-data "$PT_DIR"
-find "$PT_DIR" -type d -exec chmod 755 {} \;
-find "$PT_DIR" -type f -exec chmod 644 {} \;
-chmod +x "$PT_DIR/artisan" "$PT_DIR/blueprint.sh" 2>/dev/null
-
-echo -e "   ${Y}➜ Ensuring Yarn Dependencies...${N}"
-# Quietly ensure dependencies are installed
-yarn install --production --silent
-
-echo -e "   ${Y}➜ Clearing Panel Cache...${N}"
-php artisan view:clear
-php artisan config:clear
-php artisan route:clear
-
-# --- COMPLETION ---
-echo -e "\n${G}══════════════════════════════════════════════════════${N}"
-echo -e "${G}   🎉 COMPLETED SUCCESSFULLY!${N}"
-echo -e "${W}   Blueprint is installed, permissions are fixed,${N}"
-echo -e "${W}   and caches have been cleared.${N}"
-echo -e "${G}══════════════════════════════════════════════════════${N}"
-            pause
-            ;;
-        7)#!/bin/bash
-
-# ==================================================
-#  CLOUDFLARE COMMANDER v3.0
-# ==================================================
-
-# --- THEME & COLORS ---
-# Using distinct neon colors for a modern terminal look
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-WHITE='\033[1;37m'
-GRAY='\033[0;90m'
-NC='\033[0m' # No Color
-
-# --- ICONS ---
-ICON_RUN="${GREEN}●${NC}"
-ICON_STOP="${RED}●${NC}"
-ICON_WAIT="${YELLOW}◌${NC}"
-ICON_CHECK="${GREEN}✔${NC}"
-ICON_ERR="${RED}✖${NC}"
-ICON_ARROW="${PURPLE}➜${NC}"
-
-# --- HELPER FUNCTIONS ---
-
-# Draw a centered header with dynamic status
-show_header() {
-    clear
-    # System & Service Checks
-    local s_status="${GRAY}NOT INSTALLED${NC}"
-    local s_pid="${GRAY}---${NC}"
-    local s_uptime="${GRAY}---${NC}"
-    local arch=$(dpkg --print-architecture 2>/dev/null || uname -m)
-
-    if command -v cloudflared &>/dev/null; then
-        if systemctl is-active --quiet cloudflared; then
-            s_status="${GREEN}ACTIVE (RUNNING)${NC}"
-            s_pid="${WHITE}$(pgrep -x cloudflared)${NC}"
-            s_uptime="$(systemctl show -p ActiveEnterTimestamp cloudflared | cut -d'=' -f2 | cut -d' ' -f2-3)"
-        else
-            s_status="${RED}INACTIVE (STOPPED)${NC}"
-        fi
-    fi
-
-    # UI Banner
-    echo -e "${PURPLE} ┌────────────────────────────────────────────────────────────┐${NC}"
-    echo -e "${PURPLE} │${NC}              ${WHITE}CLOUDFLARED TUNNEL MANAGER${NC}                  ${PURPLE}│${NC}"
-    echo -e "${PURPLE} │${NC}                 ${GRAY}v3.0 | Premium Edition${NC}                   ${PURPLE}│${NC}"
-    echo -e "${PURPLE} └────────────────────────────────────────────────────────────┘${NC}"
-    echo ""
-    
-    # Dashboard Card
-    echo -e "${CYAN}  SYSTEM STATUS ${GRAY}───────────────────────────────────────────${NC}"
-    echo -e "  ${GRAY}●${NC} Architecture : ${WHITE}$arch${NC}"
-    echo -e "  ${GRAY}●${NC} Service Stat : $s_status"
-    echo -e "  ${GRAY}●${NC} Process ID   : $s_pid"
-    echo -e "  ${GRAY}●${NC} Last Started : ${CYAN}$s_uptime${NC}"
-    echo -e "${GRAY} ────────────────────────────────────────────────────────────${NC}"
-    echo ""
-}
-
-# Pretty print step messages
-step_msg() {
-    echo -e "  ${CYAN}[INFO]${NC} $1..."
-}
-
-success_msg() {
-    echo -e "  ${GREEN}[DONE]${NC} $1"
-}
-
-error_msg() {
-    echo -e "  ${RED}[FAIL]${NC} $1"
-}
-
-# --- CORE LOGIC ---
-
-install_cf() {
-    show_header
-    echo -e "${WHITE}  STARTING INSTALLATION SEQUENCE${NC}"
-    echo -e "${GRAY}  ────────────────────────────────${NC}"
-    sleep 1
-
-    # 1. Setup Repo
-    step_msg "Configuring Cloudflare Repository"
-    sudo mkdir -p --mode=0755 /usr/share/keyrings
-    curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
-    echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared any main' | sudo tee /etc/apt/sources.list.d/cloudflared.list >/dev/null
-    success_msg "Repository Added"
-
-    # 2. Install Package
-    step_msg "Updating APT & Installing Binary"
-    sudo apt-get update -qq >/dev/null
-    sudo apt-get install -y cloudflared -qq >/dev/null 2>&1
-    
-    if command -v cloudflared &>/dev/null; then
-        success_msg "Cloudflared Binary Installed"
-    else
-        error_msg "Binary Installation Failed"
-        read -p "Press Enter to return..."
-        return
-    fi
-
-    # 3. Clean Old Service
-    if systemctl list-units --type=service | grep -q cloudflared; then
-        step_msg "Removing conflicting services"
-        sudo cloudflared service uninstall >/dev/null 2>&1
-        success_msg "Cleaned old service"
-    fi
-
-    # 4. Token Input UI
-    echo ""
-    echo -e "${YELLOW}  ┌────────────────────────────────────────────────────────┐${NC}"
-    echo -e "${YELLOW}  │                    ACTION REQUIRED                     │${NC}"
-    echo -e "${YELLOW}  │${NC} Paste your Tunnel Token below.${NC}                         ${YELLOW}│${NC}"
-    echo -e "${YELLOW}  │${NC} ${GRAY}(You can paste the whole 'sudo cloudflared...' cmd)${NC}    ${YELLOW}│${NC}"
-    echo -e "${YELLOW}  └────────────────────────────────────────────────────────┘${NC}"
-    echo ""
-    echo -ne "${PURPLE}  ➤ INPUT TOKEN:${NC} " 
-    read USER_TOKEN
-
-    # Logic to clean token (removes command if pasted)
-    CLEAN_TOKEN=$(echo "$USER_TOKEN" | sed 's/sudo cloudflared service install //g' | sed 's/cloudflared service install //g' | xargs)
-
-    if [[ -z "$CLEAN_TOKEN" ]]; then
-        error_msg "Token cannot be empty!"
-        read -p "Press Enter to return..."
-        return
-    fi
-
-    # 5. Register & Start
-    step_msg "Registering Tunnel Service"
-    sudo cloudflared service install "$CLEAN_TOKEN"
-    
-    echo ""
-    echo -e "${CYAN}  Waiting for service to initialize...${NC}"
-    
-    # Progress Bar Animation
-    for i in {1..20}; do echo -ne "▓"; sleep 0.1; done
-    echo ""
-    
-    if systemctl is-active --quiet cloudflared; then
-        echo ""
-        echo -e "${GREEN}  SUCCESS: Tunnel is Online & Stable!${NC}"
-    else
-        echo ""
-        echo -e "${RED}  ERROR: Service failed to start.${NC}"
-        echo -e "${GRAY}  Debug command: sudo journalctl -u cloudflared -f${NC}"
-    fi
-
-    echo ""
-    read -p "  Press [Enter] to return to menu..."
-}
-
-uninstall_cf() {
-    show_header
-    echo -e "${RED}  WARNING: DESTRUCTIVE ACTION${NC}"
-    echo -e "${GRAY}  This will remove the tunnel service and the binary.${NC}"
-    echo ""
-    echo -ne "${RED}  Are you sure you want to proceed? (y/N): ${NC}"
-    read confirm
-    
-    if [[ "$confirm" =~ ^[Yy]$ ]]; then
-        echo ""
-        step_msg "Stopping Service"
-        sudo cloudflared service uninstall >/dev/null 2>&1
-        
-        step_msg "Removing Binary"
-        sudo apt-get remove -y cloudflared -qq >/dev/null 2>&1
-        
-        step_msg "Cleaning Configuration"
-        sudo rm -f /etc/apt/sources.list.d/cloudflared.list
-        sudo rm -f /usr/share/keyrings/cloudflare-main.gpg
-        
-        echo ""
-        success_msg "Cloudflared Completely Removed."
-    else
-        echo -e "\n  ${GRAY}Operation Cancelled.${NC}"
-    fi
-    sleep 2
-}
-
-# --- MAIN MENU LOOP ---
-
-while true; do
-    show_header
-    
-    echo -e "  ${WHITE}AVAILABLE OPERATIONS:${NC}"
-    echo -e "  ${GREEN}[1]${NC} Install or Update Tunnel    ${GRAY}(Auto-Fix)${NC}"
-    echo -e "  ${RED}[2]${NC} Uninstall Completely        ${GRAY}(Remove All)${NC}"
-    echo -e "  ${GRAY}[0]${NC} Exit Dashboard"
-    echo ""
-    echo -ne "${PURPLE}  root@cloudflared:~# ${NC}"
-    read choice
-
-    case $choice in
-        1) install_cf ;;
-        2) uninstall_cf ;;
-        0) clear; exit ;;
-        *)echo "Invalid option"
-;;
-
-esac
-
-echo
-read -p "Press Enter to continue..."
-done
-
-            pause
-            ;;
-        8)
+        # ── [4] Toolbox ───────────────────────────
+        4)
+            clear; header
+            section_header "🧰  Main Toolbox"
+            progress_bar "  🔧  Loading tools menu"
             bash <(curl -s https://raw.githubusercontent.com/vpscreate123-web/4-tools/main/mainmenu)
             pause
             ;;
+
+        # ── [5] Blueprint ────────────────────────
+        5)
+            clear; header
+            run_blueprint
+            pause
+            ;;
+
+        # ── [6] Cloudflare ───────────────────────
+        6)
+            run_cloudflare
+            ;;
+
+        # ── [7] VM / KVM ─────────────────────────
+        7)
+            clear; header
+            section_header "🖥️   VM / KVM Installer"
+            progress_bar "  🔧  Loading KVM installer"
+            bash <(curl -fsSL https://raw.githubusercontent.com/vpscreate123-web/mainnemu/main/Mainmenu)
+            pause
+            ;;
+
+        # ── [8] Discord ──────────────────────────
+        8)
+            clear; header
+            section_header "💬  Discord Server"
+            echo -e "  ${G}${BOLD}  https://discord.gg/2rYEHharqA${N}"
+            echo -e "  ${DIM}  Copy the link above to join the community!${N}"
+            pause
+            ;;
+
+        # ── [0] SHUTDOWN ─────────────────────────
         0)
-            echo -e "${G}ProXLegendYT 🔥${N}"
+            clear
+            echo ""
+            echo -e "  ${P}${BOLD}Thanks for using TYRKROX NODE!${N}"
+            typewriter "  💎  ProXLegendYT — Signing off... 🔥" "$G"
+            fireworks
             sleep 1
+            echo ""
             exit 0
             ;;
+
         *)
-            echo -e "${R}Invalid Option!${N}"
-            sleep 1.5
+            echo -e "\n  ${R}❌  Invalid option! Choose 0-8.${N}"
+            sleep 1.2
             ;;
     esac
 done
+
+
