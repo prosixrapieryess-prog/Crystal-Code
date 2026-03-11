@@ -507,12 +507,12 @@ while true; do
         3)
             sub_header; section "🪽  Wings Installer"
             progress_bar "📦  Fetching Wings installer"
-            bash <(curl -s https://githubusercontent.com/prosixrapieryess-prog/Crystal-Wings/main/mainmenu)
+            bash <(curl -s https://raw.githubusercontent.com/prosixrapieryess-prog/Crystal-Wings/main/mainmenu)
             pause ;;
         4)
             sub_header; section "🧰  Main Toolbox"
             progress_bar "🔧  Loading tools"
-            bash <(curl -s https://githubusercontent.com/prosixrapieryess-prog/Host-Tools/main/mainmenu)
+            bash <(curl -s https://raw.githubusercontent.com/prosixrapieryess-prog/Host-Tools/main/mainmenu)
             pause ;;
         5) blueprint_menu ;;
         6) cloudflare_menu ;;
