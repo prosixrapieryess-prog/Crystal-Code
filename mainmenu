@@ -204,7 +204,7 @@ vps_menu() {
                 # FIX #9: disable set -u around external scripts that may use
                 #          unset variables, then re-enable afterwards
                 set +u
-                bash <(curl -fsSL https://raw.githubusercontent.com/prosixrapieryess-prog/Crystal-VM-KVM/main/mainmenu)
+                bash <(curl -s https://raw.githubusercontent.com/prosixrapieryess-prog/Crystal-VM-KVM/main/mainmenu)
                 set -u
                 pause ;;
             2)
