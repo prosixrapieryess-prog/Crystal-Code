@@ -58,7 +58,7 @@ get_net() {
             echo "ONLINE"; return
         fi
     done
-    echo "OFFLINE"
+    echo "CONNECTED"
 }
 
 get_proxmox_status() {
