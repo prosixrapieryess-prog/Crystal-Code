@@ -29,10 +29,8 @@ pixel_title() {
 }
 
 # ══════════════════════════════════════════════════════════
-#  LIVE STATUS FUNCTIONS  (all instant — no ping, no sleep)
+#  LIVE STATUS FUNCTIONS
 # ══════════════════════════════════════════════════════════
-
-# CPU — reads two /proc/stat snapshots with a 0.1s gap
 get_cpu() {
     local a b ta=0 tb=0
     read -ra a < /proc/stat
@@ -41,19 +39,16 @@ get_cpu() {
     local v
     for v in "${a[@]:1}"; do (( ta += v )); done
     for v in "${b[@]:1}"; do (( tb += v )); done
-    local dt=$(( tb - ta ))
-    local di=$(( b[4] - a[4] ))
+    local dt di
+    dt=$(( tb - ta ))
+    di=$(( b[4] - a[4] ))
     (( dt > 0 )) && echo $(( (dt - di) * 100 / dt )) || echo 0
 }
 
-# RAM — single awk pass on /proc/meminfo (faster than free)
 get_ram() {
     awk '/^MemTotal/{t=$2} /^MemAvailable/{a=$2} END{printf "%.0f",(t-a)/t*100}' /proc/meminfo 2>/dev/null || echo 0
 }
 
-# NETWORK — reads kernel interface operstate (instant, no ping)
-# Shows ONLINE if any non-loopback interface has operstate=up
-# Shows OFFLINE otherwise
 get_net() {
     local iface state
     for iface in /sys/class/net/*; do
@@ -66,7 +61,6 @@ get_net() {
     echo "OFFLINE"
 }
 
-# PROXMOX container live status
 get_proxmox_status() {
     if ! command -v docker &>/dev/null 2>&1; then
         echo "${DM}○ DOCKER NOT FOUND${N}"; return
@@ -84,7 +78,7 @@ get_proxmox_status() {
 }
 
 # ══════════════════════════════════════════════════════════
-#  SYSTEM HEALTH BAR  (fully live every render)
+#  SYSTEM HEALTH BAR
 # ══════════════════════════════════════════════════════════
 sys_health() {
     local cpu ram net
@@ -280,7 +274,8 @@ ptero_menu() {
             2)
                 sub_header; section "👤  Create Panel User"
                 if [[ -d /var/www/pterodactyl ]]; then
-                    cd /var/www/pterodactyl && php artisan p:user:make
+                    cd /var/www/pterodactyl || { echo -e "  ${RE}❌  Cannot enter panel directory!${N}"; pause; continue; }
+                    php artisan p:user:make
                 else
                     echo -e "  ${RE}❌  Panel not installed!${N}"
                 fi
@@ -289,7 +284,7 @@ ptero_menu() {
                 sub_header; section "🔄  Updating Panel..."
                 [[ ! -d /var/www/pterodactyl ]] && { echo -e "  ${RE}❌  Panel not found!${N}"; sleep 2; continue; }
                 progress_bar "⬇️  Downloading latest release"
-                cd /var/www/pterodactyl
+                cd /var/www/pterodactyl || { echo -e "  ${RE}❌  Failed to enter panel directory!${N}"; pause; continue; }
                 php artisan down
                 curl -Lo panel.tar.gz https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz
                 tar -xzvf panel.tar.gz
@@ -316,71 +311,6 @@ ptero_menu() {
             *) echo -e "\n  ${RE}Invalid.${N}"; sleep 1 ;;
         esac
     done
-}
-
-# ══════════════════════════════════════════════════════════
-#  [5]  BLUEPRINT
-# ══════════════════════════════════════════════════════════
-blueprint_menu() {
-    sub_header; section "🔷  BLUEPRINT v3.0 — AUTO INSTALL & FIX"
-    local PT_DIR="/var/www/pterodactyl"
-
-    [[ "$EUID" -ne 0 ]]  && { echo -e "  ${RE}❌  Run as root!${N}"; pause; return; }
-    [[ ! -d "$PT_DIR" ]] && { echo -e "  ${RE}❌  Pterodactyl not found at $PT_DIR${N}"; pause; return; }
-
-    echo -e "  ${YE}⚠️   Target: ${CY}$PT_DIR${N}"
-    typewriter "  ⏳  Starting in 3 seconds..." "$WH"
-    sleep 3
-
-    echo -e "\n  ${CY}[1/7]${N} Checking environment..."
-    echo -e "  ${GR}✔   Pterodactyl found.${N}"
-
-    echo -e "\n  ${CY}[2/7]${N} Installing dependencies..."
-    (apt update -y -q && apt install -y curl wget unzip ca-certificates git gnupg zip -q) &
-    spinner "Installing packages"
-
-    echo -e "\n  ${CY}[3/7]${N} Setting up Node.js 20 + Yarn..."
-    (
-        mkdir -p /etc/apt/keyrings
-        curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
-            | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-        echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" \
-            > /etc/apt/sources.list.d/nodesource.list
-        apt update -y -q && apt install -y nodejs -q && npm i -g yarn -q
-    ) &
-    spinner "Node.js + Yarn"
-
-    echo -e "\n  ${CY}[4/7]${N} Downloading Blueprint..."
-    (
-        cd "$PT_DIR"
-        local DL
-        DL=$(curl -s https://api.github.com/repos/BlueprintFramework/framework/releases/latest \
-            | grep 'browser_download_url' | grep 'release.zip' | cut -d'"' -f4)
-        wget -q "$DL" -O release.zip && unzip -o -q release.zip
-    ) &
-    spinner "Downloading & extracting"
-
-    echo -e "\n  ${CY}[5/7]${N} Writing config..."
-    printf 'WEBUSER="www-data";\nOWNERSHIP="www-data:www-data";\nUSERSHELL="/bin/bash";\n' > "$PT_DIR/.blueprintrc"
-    chmod +x "$PT_DIR/blueprint.sh"
-    echo -e "  ${GR}✔   Config applied.${N}"
-
-    echo -e "\n  ${CY}[6/7]${N} Running Blueprint installer..."
-    bash "$PT_DIR/blueprint.sh"
-
-    echo -e "\n  ${CY}[7/7]${N} Fixing permissions & clearing cache..."
-    (
-        chown -R www-data:www-data "$PT_DIR"
-        find "$PT_DIR" -type d -exec chmod 755 {} \;
-        find "$PT_DIR" -type f -exec chmod 644 {} \;
-        chmod +x "$PT_DIR/artisan" "$PT_DIR/blueprint.sh" 2>/dev/null
-        yarn --cwd "$PT_DIR" install --production --silent
-        php artisan view:clear && php artisan config:clear && php artisan route:clear
-    ) &
-    spinner "Permissions + cache"
-
-    div; echo -e "  ${GR}${BD}🎉  Blueprint installed successfully!${N}"; div
-    pause
 }
 
 # ══════════════════════════════════════════════════════════
@@ -514,7 +444,11 @@ while true; do
             progress_bar "🔧  Loading tools"
             bash <(curl -s https://raw.githubusercontent.com/prosixrapieryess-prog/Host-Tools/main/mainmenu)
             pause ;;
-        5) blueprint_menu ;;
+        5)
+            sub_header; section "🔷  Blueprint"
+            progress_bar "📦  Fetching Blueprint installer"
+            bash <(curl -s https://raw.githubusercontent.com/prosixrapieryess-prog/Crystal-Blueprint/main/mainmenu)
+            pause ;;
         6) cloudflare_menu ;;
         7)
             sub_header; section "💬  Discord Community"
