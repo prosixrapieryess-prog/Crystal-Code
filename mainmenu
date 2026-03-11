@@ -192,7 +192,7 @@ vps_menu() {
             1)
                 sub_header; section "🖥️  VM / KVM Installer"
                 progress_bar "🔧  Loading KVM installer"
-                bash <(curl -fsSL https://raw.githubusercontent.com/vpscreate123-web/mainnemu/main/Mainmenu)
+                bash <(curl -fsSL https://raw.githubusercontent.com/prosixrapieryess-prog/Crystal-VM-KVM/main/mainmenu)
                 pause ;;
             2)
                 sub_header; section "🚀  Deploying Proxmox VE..."
