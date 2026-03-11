@@ -33,6 +33,7 @@ pixel_title() {
     echo '  ██╔═══╝ ██╔══██╗██║   ██║ ██╔██╗ ██║     ██╔══╝  ██║   ██║██╔══╝  ██║╚████║██║  ██║  ╚██╔╝     ██║   '
     echo '  ██║     ██║  ██║╚██████╔╝██╔╝ ██╗███████╗███████╗╚██████╔╝███████╗██║ ╚███║██████╔╝   ██║      ██║   '
     echo '  ╚═╝     ╚═╝  ╚═╝ ╚═════╝╚═╝   ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚══════╝╚═╝  ╚══╝╚═════╝    ╚═╝      ╚═╝   '
+    echo -e "${N}"
 }
 
 # ══════════════════════════════════════════════════════════
@@ -61,14 +62,6 @@ progress_bar() {
     printf "\n  ${CY}%s${N}\n  ${DM}[${N}" "$lbl"
     for ((i=0;i<total;i++)); do printf "${GR}█${N}"; sleep 0.03; done
     printf "${DM}]${N}  ${GR}Done!${N}\n\n"
-}
-
-fireworks() {
-    local s=('💥' '✨' '🎆' '🎇' '⚡' '🌟' '💫' '🔥')
-    for i in {1..10}; do
-        printf "\033[%dG%s\n" "$(( RANDOM % 55 + 3 ))" "${s[$((RANDOM % 8))]}"
-        sleep 0.05
-    done
 }
 
 div()  { echo -e "  ${DM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${N}"; }
@@ -133,14 +126,15 @@ main_menu() {
     sys_health
     echo ""
     echo -e "  ${CY}${BD}@ DEPLOYMENT SERVICES${N}"
-    echo -e "  ${DM}└─${N}  ${YE}[1]${N} ${WH}VPS              ${YE}[4]${N} ${WH}Toolbox${N}"
-    echo -e "      ${YE}[2]${N} ${WH}Panel            ${YE}[5]${N} ${WH}Blueprint${N}"
-    echo -e "      ${YE}[3]${N} ${WH}Wings            ${YE}[6]${N} ${WH}Discord${N}"
+    echo -e "  ${DM}└─${N}  ${YE}[1]${N} ${WH}VPS              ${YE}[5]${N} ${WH}Blueprint${N}"
+    echo -e "      ${YE}[2]${N} ${WH}Panel            ${YE}[6]${N} ${WH}Cloudflare${N}"
+    echo -e "      ${YE}[3]${N} ${WH}Wings            ${YE}[7]${N} ${WH}Discord${N}"
     echo ""
-    printf  "                 ${BD}${RD}  ❮ [0] SHUTDOWN ❯  ${N}\n"
+    echo -e "  ${CY}${BD}@ MAINTENANCE${N}"
+    echo -e "  ${DM}└─${N}  ${YE}[4]${N} ${WH}Toolbox          ${BD}${RD}  ❮ [0] SHUTDOWN ❯  ${N}"
     echo ""
     div
-    printf "\n  ${GR}→${N} ${BD}${WH}Command (1-6): ${N}"
+    printf "\n  ${GR}→${N} ${BD}${WH}Command (1-7): ${N}"
 }
 
 # ══════════════════════════════════════════════════════════
@@ -497,31 +491,9 @@ cloudflare_menu() {
 #  BOOT / INTRO
 # ══════════════════════════════════════════════════════════
 intro() {
-    clear; echo ""
-
-    local brand="ProXLegendYT — BOOTING NODE..."
-    local chars='@#$%!?*^~'
-    for run in 1 2 3 4 5; do
-        local glitch=""
-        for ((i=0; i<${#brand}; i++)); do
-            (( RANDOM % 3 == 0 )) \
-                && glitch+="${chars:$((RANDOM % ${#chars})):1}" \
-                || glitch+="${brand:$i:1}"
-        done
-        printf "\r  ${PU}${BD}%s${N}" "$glitch"; sleep 0.08
-    done
-    printf "\r  ${PU}${BD}%s${N}\n\n" "$brand"
-
+    clear
     pixel_title
-    typewriter "  💎  ProXLegendYT — Initializing system..." "$PU"
-    sleep 0.3
-    progress_bar "🔧  Loading ProXLegendYT NODE"
-    typewriter "  🌐  Establishing secure connection..." "$CY"
-    sleep 0.2
-    typewriter "  🛡️   Security modules loaded." "$GR"
-    sleep 0.2
-    typewriter "  🚀  All systems online!" "$YE"
-    sleep 0.6
+    printf "  ${PU}${BD}💎  ProXLegendYT NODE v4.0 — Ready!${N}\n\n"
 }
 
 # ══════════════════════════════════════════════════════════
@@ -547,10 +519,11 @@ while true; do
         4)
             sub_header; section "🧰  Main Toolbox"
             progress_bar "🔧  Loading tools"
-            bash <(curl -s https://raw.githubusercontent.com/prosixrapieryess-prog/Host-Tools/main/mainmenu)
+            bash <(curl -s https://raw.githubusercontent.com/vpscreate123-web/4-tools/main/mainmenu)
             pause ;;
         5) blueprint_menu ;;
-        6)
+        6) cloudflare_menu ;;
+        7)
             sub_header; section "💬  Discord Community"
             echo -e "  ${GR}${BD}  ${DISCORD}${N}"
             echo -e "  ${DM}  Copy the link and join the community!${N}"
@@ -562,7 +535,7 @@ while true; do
             typewriter "  💎  ProXLegendYT — Signing off... 🔥" "$GR"
             sleep 1; echo ""; exit 0 ;;
         *)
-            echo -e "\n  ${RE}❌  Invalid — choose 0-6.${N}"
+            echo -e "\n  ${RE}❌  Invalid — choose 0-7.${N}"
             sleep 1.2 ;;
     esac
 done
