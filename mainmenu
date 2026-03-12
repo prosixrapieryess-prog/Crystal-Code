@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════
 #  ProXLegendYT — NODE v4.0
-#  Author: ProXLegendYT
+#  Author  : ProXLegendYT
+#  Repo    : https://github.com/prosixrapieryess-prog/Crystal-Code.git
 # ═══════════════════════════════════════════════════════════
 export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
@@ -13,6 +14,7 @@ RE=$'\033[91m' WH=$'\033[97m' DM=$'\033[2m'  BD=$'\033[1m'
 BL=$'\033[5m'  RD=$'\033[41m' N=$'\033[0m'
 
 DISCORD="https://dcserver.link/crystalsmp"
+REPO_URL="https://github.com/prosixrapieryess-prog/Crystal-Code.git"
 
 # ══════════════════════════════════════════════════════════
 #  PIXEL TITLE
@@ -49,8 +51,6 @@ get_ram() {
         /proc/meminfo 2>/dev/null || echo 0
 }
 
-# FIX #1: fallback was "CONNECTED" — should be "OFFLINE" so the
-#          sys_health() colour logic (checking == "OFFLINE") actually triggers.
 get_net() {
     local iface state
     for iface in /sys/class/net/*; do
@@ -60,11 +60,11 @@ get_net() {
             echo "ONLINE"; return
         fi
     done
-    echo "OFFLINE"   # ← was "CONNECTED" (bug: network colour never went red)
+    echo "OFFLINE"
 }
 
 get_proxmox_status() {
-    if ! command -v docker &>/dev/null; then   # FIX #7: removed redundant 2>&1
+    if ! command -v docker &>/dev/null; then
         echo "${DM}○ DOCKER NOT FOUND${N}"; return
     fi
     if ! docker inspect proxmoxve &>/dev/null; then
@@ -91,8 +91,6 @@ sys_health() {
     local cpu_c="${GR}" ram_c="${GR}" net_c="${GR}"
     (( cpu > 79 )) && cpu_c="${RE}" || (( cpu > 49 )) && cpu_c="${YE}" || true
     (( ram > 79 )) && ram_c="${RE}" || (( ram > 49 )) && ram_c="${YE}" || true
-    # FIX #1 (cont.): this check now correctly triggers because get_net()
-    #                  returns "OFFLINE" instead of "CONNECTED"
     [[ "$net" == "OFFLINE" ]] && net_c="${RE}"
 
     echo -e "  ${BD}${WH}System Health:${N}"
@@ -102,12 +100,9 @@ sys_health() {
 # ══════════════════════════════════════════════════════════
 #  UI HELPERS
 # ══════════════════════════════════════════════════════════
-
-# FIX #6: split `local msg pid` onto separate lines so bash's `local`
-#          never masks the exit status of the $! capture.
 spinner() {
     local msg="$1"
-    local pid=$!          # capture last background PID immediately
+    local pid=$!
     local i=0
     local -a f=('⣾' '⣽' '⣻' '⢿' '⡿' '⣟' '⣯' '⣷')
     while kill -0 "$pid" 2>/dev/null; do
@@ -156,6 +151,334 @@ pause() {
 }
 
 # ══════════════════════════════════════════════════════════
+#  AUTO IDX SETUP — runs silently on first clone
+#  Detects repo root, writes .idx/dev.nix automatically
+# ══════════════════════════════════════════════════════════
+
+# Resolve the repo root (works whether run as `bash mainmenu`
+# or `bash <(curl ...)` from inside the cloned folder)
+_find_repo_root() {
+    local dir
+    dir="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
+    # Walk up looking for .git or just use current dir
+    while [[ "$dir" != "/" ]]; do
+        [[ -d "$dir/.git" ]] && { echo "$dir"; return; }
+        dir="$(dirname "$dir")"
+    done
+    # Fallback: use the directory the script lives in
+    echo "$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
+}
+
+write_dev_nix() {
+    local repo_root="$1"
+    local idx_dir="$repo_root/.idx"
+    local nix_file="$idx_dir/dev.nix"
+
+    mkdir -p "$idx_dir"
+
+    cat > "$nix_file" << 'DEVNIX'
+{ pkgs, ... }: {
+
+  # ╔══════════════════════════════════════════════════════════╗
+  # ║   Crystal-Code.git — ProXLegendYT  │  NODE v4.0        ║
+  # ║   Google Project IDX  dev.nix  (auto-generated)        ║
+  # ║   Repo: https://github.com/prosixrapieryess-prog/       ║
+  # ║         Crystal-Code.git                               ║
+  # ╚══════════════════════════════════════════════════════════╝
+
+  channel = "stable-24.05";
+
+  packages = with pkgs; [
+
+    # ── VM Engine ────────────────────────────────────────────
+    qemu_kvm            # QEMU with KVM acceleration
+    qemu-utils          # qemu-img, qemu-nbd, qemu-io
+    cloud-image-utils   # cloud-localds (cloud-init seed creator)
+    virt-manager        # optional GUI for VMs (if display available)
+    libvirt             # virtualisation API
+
+    # ── Network & SSH ────────────────────────────────────────
+    openssh             # SSH client + server tools
+    iproute2            # ip, ss, tc commands
+    nettools            # ifconfig, netstat, route
+    nmap                # network scanner / port checker
+    iptables            # firewall rules
+    dnsutils            # dig, nslookup
+
+    # ── Docker & Containers ──────────────────────────────────
+    docker              # container engine (for Proxmox VE etc.)
+    docker-compose      # multi-container orchestration
+
+    # ── Web / Tunnel Tools ───────────────────────────────────
+    cloudflared         # Cloudflare Tunnel client
+    nginx               # reverse proxy / web server
+    certbot             # Let's Encrypt SSL certs
+
+    # ── System Tools ─────────────────────────────────────────
+    sudo                # privilege escalation
+    procps              # pgrep, pkill, ps, free, top
+    lsof                # list open files & ports
+    util-linux          # mount, lsblk, flock, kill
+    coreutils           # ls, cp, mv, cat, echo …
+    systemd             # service management (if available)
+    pciutils            # lspci — detect KVM/hardware
+    usbutils            # lsusb
+    dmidecode           # hardware info (RAM slots, CPU model)
+
+    # ── Crypto & Security ────────────────────────────────────
+    openssl             # password hashing, certs
+    gnupg               # GPG keys
+    age                 # modern encryption tool
+    sshpass             # non-interactive SSH auth
+
+    # ── Download & Transfer ──────────────────────────────────
+    curl                # HTTP/S client
+    wget                # file downloader
+    rsync               # efficient file sync
+    aria2               # fast parallel downloader
+
+    # ── Languages & Runtimes ─────────────────────────────────
+    nodejs_20           # Node.js 20 LTS
+    python3             # Python 3
+    python3Packages.pip # pip package manager
+    php83               # PHP 8.3 (for Pterodactyl panel)
+    php83Extensions.curl
+    php83Extensions.mbstring
+    php83Extensions.xml
+    php83Extensions.zip
+    php83Extensions.bcmath
+    php83Extensions.pdo
+    php83Extensions.tokenizer
+    composer            # PHP dependency manager
+
+    # ── Database ─────────────────────────────────────────────
+    mariadb             # MySQL-compatible DB (for Pterodactyl)
+    redis               # in-memory cache (for Pterodactyl)
+
+    # ── General Utilities ────────────────────────────────────
+    git                 # version control
+    gh                  # GitHub CLI
+    unzip               # extract .zip
+    zip                 # create .zip
+    p7zip               # 7z archives
+    screen              # terminal multiplexer (keep VMs running)
+    tmux                # alternative terminal multiplexer
+    htop                # interactive process viewer
+    btop                # beautiful resource monitor
+    ncdu                # disk usage analyser
+    tree                # directory tree viewer
+    jq                  # JSON processor
+    nano                # simple text editor
+    vim                 # advanced text editor
+    neovim              # modern vim
+    fzf                 # fuzzy finder
+
+  ];
+
+  # ── Environment Variables ───────────────────────────────────
+  env = {
+    VM_DIR        = "/home/user/Crystal-Code.git/vms";
+    TERM          = "xterm-256color";
+    COLORTERM     = "truecolor";
+    EDITOR        = "nano";
+    DOCKER_HOST   = "unix:///var/run/docker.sock";
+    # Composer (PHP) — allow running as root inside IDX
+    COMPOSER_ALLOW_SUPERUSER = "1";
+  };
+
+  # ── IDX Workspace Hooks ─────────────────────────────────────
+  idx = {
+    workspace = {
+
+      # ── Runs ONCE when workspace is first created ───────────
+      onCreate = {
+
+        # Create all required directories
+        setup-dirs = ''
+          mkdir -p /home/user/Crystal-Code.git/vms
+          mkdir -p /home/user/Crystal-Code.git/logs
+          chmod +x /home/user/Crystal-Code.git/mainmenu 2>/dev/null || true
+          chmod +x /home/user/Crystal-Code.git/run.sh   2>/dev/null || true
+        '';
+
+        # Show welcome banner
+        welcome = ''
+          echo ""
+          echo "  ╔══════════════════════════════════════════════════════╗"
+          echo "  ║  💎  Crystal-Code.git  │  ProXLegendYT NODE v4.0   ║"
+          echo "  ║  ✅  Workspace created successfully!                ║"
+          echo "  ║                                                      ║"
+          echo "  ║  ▶  Run:  bash mainmenu   to launch the manager     ║"
+          echo "  ║  📌  Repo: github.com/prosixrapieryess-prog/        ║"
+          echo "  ║           Crystal-Code.git                          ║"
+          echo "  ╚══════════════════════════════════════════════════════╝"
+          echo ""
+        '';
+
+      };
+
+      # ── Runs EVERY TIME the workspace opens ─────────────────
+      onStart = {
+
+        # KVM availability check
+        check-kvm = ''
+          echo ""
+          if [ -e /dev/kvm ]; then
+            echo "  ✅  KVM is available — VMs will run at full speed!"
+          else
+            echo "  ⚠️   KVM not available — VMs will use TCG (software emulation) mode"
+          fi
+        '';
+
+        # Docker daemon check
+        check-docker = ''
+          if command -v docker &>/dev/null; then
+            if docker info &>/dev/null 2>&1; then
+              echo "  ✅  Docker is running"
+            else
+              echo "  ⚠️   Docker installed but daemon is not running"
+              echo "       Try: sudo dockerd &"
+            fi
+          else
+            echo "  ⚠️   Docker not found in PATH"
+          fi
+        '';
+
+        # Network status
+        check-network = ''
+          if ping -c 1 8.8.8.8 &>/dev/null 2>&1; then
+            echo "  ✅  Network is ONLINE"
+          else
+            echo "  ⚠️   Network appears OFFLINE"
+          fi
+        '';
+
+        # Helpful tips
+        show-tips = ''
+          echo ""
+          echo "  💡  Tips:"
+          echo "       • bash mainmenu            — launch ProXLegendYT NODE"
+          echo "       • screen -S vm bash mainmenu — run in background"
+          echo "       • ssh -p 2222 user@localhost  — SSH into your VM"
+          echo "       • docker ps                 — list running containers"
+          echo ""
+        '';
+
+      };
+
+    };
+
+    # ── IDX Extensions ──────────────────────────────────────────
+    extensions = [
+      "mkhl.shfmt"              # shell script formatter
+      "timonwong.shellcheck"    # shell script linter
+      "ms-azuretools.vscode-docker"  # Docker UI
+    ];
+
+    # ── IDX Previews ────────────────────────────────────────────
+    previews = {
+      enable = true;
+      previews = {
+        # Proxmox VE web UI (when container is running)
+        proxmox = {
+          command = [ "echo" "Proxmox VE runs on port 8006 — open https://localhost:8006" ];
+          manager = "web";
+          env = { PORT = "8006"; };
+        };
+      };
+    };
+
+  };
+
+}
+DEVNIX
+}
+
+# ── AUTO-TRIGGER: write dev.nix if missing ──────────────────
+auto_idx_setup() {
+    local repo_root
+    repo_root="$(_find_repo_root)"
+    local nix_file="$repo_root/.idx/dev.nix"
+
+    if [[ ! -f "$nix_file" ]]; then
+        # Show a brief notice (non-blocking)
+        echo -e "\n  ${CY}${BD}💎  Crystal-Code.git — First Run Detected${N}"
+        echo -e "  ${DM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${N}"
+        echo -e "  ${YE}⚙   Auto-generating${N} ${WH}.idx/dev.nix${N} ${YE}for IDX...${N}"
+        write_dev_nix "$repo_root"
+        echo -e "  ${GR}${BD}✅  .idx/dev.nix created at:${N} ${WH}$nix_file${N}"
+        echo -e "  ${DM}    IDX will install all packages on next open.${N}\n"
+        sleep 1
+    fi
+}
+
+# ══════════════════════════════════════════════════════════
+#  IDX SETUP MENU  (manual trigger from menu option 8)
+# ══════════════════════════════════════════════════════════
+idx_setup_menu() {
+    sub_header
+    section "💎  IDX WORKSPACE SETUP"
+
+    local repo_root
+    repo_root="$(_find_repo_root)"
+    local nix_file="$repo_root/.idx/dev.nix"
+
+    echo -e "  ${DM}Repo root detected :${N} ${WH}${repo_root}${N}"
+    echo -e "  ${DM}Target dev.nix path:${N} ${WH}${nix_file}${N}"
+    echo ""
+
+    if [[ -f "$nix_file" ]]; then
+        echo -e "  ${GR}${BD}✅  .idx/dev.nix already exists.${N}"
+        tdiv
+        echo -e "  ${YE}  1${N}  ${DM}│${N}  🔄  ${WH}Overwrite & regenerate dev.nix${N}"
+        tdiv
+        echo -e "  ${CY}  2${N}  ${DM}│${N}  👁   ${WH}View current dev.nix${N}"
+        tdiv
+        echo -e "  ${DM}  0${N}  ${DM}│${N}  ⬅️   ${WH}Back${N}"
+        div
+        printf "\n  ${GR}→${N} ${BD}${WH}Command: ${N}"; read -r ic
+        case $ic in
+            1)
+                progress_bar "📝  Writing dev.nix"
+                write_dev_nix "$repo_root"
+                echo -e "  ${GR}${BD}✅  dev.nix regenerated!${N}"
+                ;;
+            2)
+                echo ""
+                cat "$nix_file"
+                ;;
+            0) return ;;
+        esac
+    else
+        echo -e "  ${YE}⚠️   No .idx/dev.nix found — will create it now.${N}"
+        echo ""
+        echo -e "  ${CY}  1${N}  ${DM}│${N}  ✨  ${WH}Create .idx/dev.nix now${N}"
+        tdiv
+        echo -e "  ${DM}  0${N}  ${DM}│${N}  ⬅️   ${WH}Back${N}"
+        div
+        printf "\n  ${GR}→${N} ${BD}${WH}Command: ${N}"; read -r ic
+        case $ic in
+            1)
+                progress_bar "📝  Writing dev.nix"
+                write_dev_nix "$repo_root"
+                echo -e "\n  ${GR}${BD}✅  .idx/dev.nix created successfully!${N}"
+                echo -e "  ${CY}     Packages included:${N}"
+                echo -e "  ${DM}     VM Engine, Docker, Network/SSH, PHP/Composer,${N}"
+                echo -e "  ${DM}     Node.js, Python, MariaDB, Redis, Cloudflared,${N}"
+                echo -e "  ${DM}     Nginx, Certbot, System Tools, Utilities & more.${N}"
+                echo ""
+                echo -e "  ${YE}  📌  Next steps:${N}"
+                echo -e "  ${WH}     1. Open ${GR}${repo_root}${WH} in Google Project IDX${N}"
+                echo -e "  ${WH}     2. IDX auto-installs all packages from dev.nix${N}"
+                echo -e "  ${WH}     3. Run: ${GR}bash mainmenu${WH} in the IDX terminal${N}"
+                ;;
+            0) return ;;
+        esac
+    fi
+    pause
+}
+
+# ══════════════════════════════════════════════════════════
 #  MAIN MENU
 # ══════════════════════════════════════════════════════════
 main_menu() {
@@ -168,10 +491,11 @@ main_menu() {
     echo -e "      ${YE}[3]${N} ${WH}Wings            ${YE}[7]${N} ${WH}Discord${N}"
     echo ""
     echo -e "  ${CY}${BD}@ MAINTENANCE${N}"
-    echo -e "  ${DM}└─${N}  ${YE}[4]${N} ${WH}Toolbox          ${BD}${RD}  ❮ [0] SHUTDOWN ❯  ${N}"
+    echo -e "  ${DM}└─${N}  ${YE}[4]${N} ${WH}Toolbox          ${YE}[8]${N} ${CY}IDX Setup${N}"
+    echo -e "           ${BD}${RD}  ❮ [0] SHUTDOWN ❯  ${N}"
     echo ""
     div
-    printf "\n  ${GR}→${N} ${BD}${WH}Command (0-7): ${N}"
+    printf "\n  ${GR}→${N} ${BD}${WH}Command (0-8): ${N}"
 }
 
 # ══════════════════════════════════════════════════════════
@@ -201,8 +525,6 @@ vps_menu() {
             1)
                 sub_header; section "🖥️  VM / KVM Installer"
                 progress_bar "🔧  Loading KVM installer"
-                # FIX #9: disable set -u around external scripts that may use
-                #          unset variables, then re-enable afterwards
                 set +u
                 bash <(curl -fsSL https://raw.githubusercontent.com/prosixrapieryess-prog/Crystal-VM-KVM/main/mainmenu)
                 set -u
@@ -301,7 +623,6 @@ ptero_menu() {
                 pause ;;
             3)
                 sub_header; section "🔄  Updating Panel..."
-                # FIX #3: was `sleep 2; continue` — changed to `pause; continue`
                 if [[ ! -d /var/www/pterodactyl ]]; then
                     echo -e "  ${RE}❌  Panel not found — install it first!${N}"
                     pause; continue
@@ -309,14 +630,12 @@ ptero_menu() {
                 progress_bar "⬇️  Downloading latest release"
                 cd /var/www/pterodactyl || { echo -e "  ${RE}❌  Failed to enter panel directory!${N}"; pause; continue; }
                 php artisan down
-                # FIX #5: check curl success before proceeding
                 if ! curl -fsSL -o panel.tar.gz \
                         https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz; then
                     echo -e "  ${RE}❌  Download failed! Check your internet connection.${N}"
                     php artisan up 2>/dev/null || true
                     pause; continue
                 fi
-                # FIX #4: removed verbose flag -v from tar (was spamming hundreds of lines)
                 if ! tar -xzf panel.tar.gz; then
                     echo -e "  ${RE}❌  Archive extraction failed!${N}"
                     php artisan up 2>/dev/null || true
@@ -367,7 +686,6 @@ cloudflare_menu() {
             if systemctl is-active --quiet cloudflared 2>/dev/null; then
                 svc_txt="${GR}${BD}ACTIVE ● RUNNING${N}"
                 pid_txt="${WH}$(pgrep -x cloudflared 2>/dev/null | head -1 || echo '---')${N}"
-                # FIX #8: strip the "ActiveEnterTimestamp=" key prefix properly
                 local raw_ts
                 raw_ts=$(systemctl show -p ActiveEnterTimestamp cloudflared 2>/dev/null)
                 up_txt="${CY}${raw_ts#ActiveEnterTimestamp=}${N}"
@@ -408,7 +726,6 @@ cloudflare_menu() {
             pause; return
         fi
 
-        # FIX #2: was missing step [3/4] — added "Removing old service" as step 3
         echo -e "\n  ${CY}[3/4]${N} Removing any old tunnel service..."
         if systemctl list-units --type=service 2>/dev/null | grep -q cloudflared; then
             (sudo cloudflared service uninstall >/dev/null 2>&1) &
@@ -484,9 +801,10 @@ cloudflare_menu() {
 }
 
 # ══════════════════════════════════════════════════════════
-#  BOOT
+#  BOOT — auto-generate .idx/dev.nix on first run
 # ══════════════════════════════════════════════════════════
 clear; pixel_title
+auto_idx_setup   # ← silently writes .idx/dev.nix if missing
 printf "  ${PU}${BD}💎  ProXLegendYT NODE v4.0 — Ready!${N}\n\n"
 
 # ══════════════════════════════════════════════════════════
@@ -524,12 +842,13 @@ while true; do
             echo -e "  ${GR}${BD}  ${DISCORD}${N}"
             echo -e "  ${DM}  Copy the link and join!${N}"
             pause ;;
+        8) idx_setup_menu ;;
         0)
             clear; pixel_title
             echo -e "  ${PU}${BD}Thanks for using ProXLegendYT NODE!${N}"
             typewriter "  💎  ProXLegendYT — Signing off... 🔥" "$GR"
             sleep 1; echo ""; exit 0 ;;
         *)
-            echo -e "\n  ${RE}❌  Invalid — choose 0-7.${N}"; sleep 1 ;;
+            echo -e "\n  ${RE}❌  Invalid — choose 0-8.${N}"; sleep 1 ;;
     esac
 done
