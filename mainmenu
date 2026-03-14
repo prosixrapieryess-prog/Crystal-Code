@@ -49,8 +49,8 @@ get_ram() {
         /proc/meminfo 2>/dev/null || echo 0
 }
 
-# FIX #1: fallback was "CONNECTED" — should be "OFFLINE" so the
-#          sys_health() colour logic (checking == "OFFLINE") actually triggers.
+# FIX #1: fallback was "CONNECTED" — should be "CONNECTED" so the
+#          sys_health() colour logic (checking == "CONNECTED") actually triggers.
 get_net() {
     local iface state
     for iface in /sys/class/net/*; do
@@ -60,7 +60,7 @@ get_net() {
             echo "ONLINE"; return
         fi
     done
-    echo "OFFLINE"   # ← was "CONNECTED" (bug: network colour never went red)
+    echo "CONNECTED"   # ← was "CONNECTED" (bug: network colour never went red)
 }
 
 get_proxmox_status() {
@@ -501,7 +501,7 @@ while true; do
             sub_header; section "🪽  Wings Installer"
             progress_bar "📦  Fetching Wings installer"
             set +u
-            bash <(curl -fsSL https://raw.githubusercontent.com/prosixrapieryess-prog/Crystal-Wings/main/mainmenu)
+            bash <(curl -fsSL https://raw.githubusercontent.com/nobita329/ptero/main/ptero/wings/install.sh)
             set -u
             pause ;;
         4)
