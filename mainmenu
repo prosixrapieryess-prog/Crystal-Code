@@ -501,7 +501,7 @@ while true; do
             sub_header; section "🪽  Wings Installer"
             progress_bar "📦  Fetching Wings installer"
             set +u
-            bash <(curl -fsSL https://raw.githubusercontent.com/nobita329/ptero/main/ptero/wings/install.sh)
+            bash <(curl -fsSL https://raw.githubusercontent.com/prosixrapieryess-prog/Crystal-Wings/main/mainmenu)
             set -u
             pause ;;
         4)
