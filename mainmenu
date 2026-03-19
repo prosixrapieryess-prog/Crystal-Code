@@ -267,7 +267,7 @@ vps_menu() {
 # ══════════════════════════════════════════════════════════
 ptero_menu() {
     while true; do
-        sub_header; section "  PANEL"
+        sub_header; section "PANEL"
         echo -e "  ${YE}  1${N}  ${DM}│${N}  🧩  ${WH}Panels${N}"
         tdiv
         echo -e "  ${YE}  2${N}  ${DM}│${N}  👤  ${WH}Create Admin User${N}"
