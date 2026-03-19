@@ -12,14 +12,14 @@ CY=$'\033[96m'   PU=$'\033[95m'   YE=$'\033[93m'   GR=$'\033[92m'
 RE=$'\033[91m'   WH=$'\033[97m'   DM=$'\033[2m'    BD=$'\033[1m'
 BL=$'\033[5m'    RD=$'\033[41m'   N=$'\033[0m'      BK=$'\033[90m'
 MG=$'\033[35m'   AQ=$'\033[36m'   OR=$'\033[33m'   LB=$'\033[94m'
-BG_BK=$'\033[40m'  IT=$'\033[3m'
+IT=$'\033[3m'
  
 DISCORD="https://dcserver.link/crystalsmp"
 VERSION="v4.0"
 CODENAME="CRYSTAL"
  
 # ══════════════════════════════════════════════════════════
-#  PIXEL TITLE (ProXLegendYT ASCII)
+#  PIXEL TITLE
 # ══════════════════════════════════════════════════════════
 pixel_title() {
     echo -e "${CY}${BD}"
@@ -37,135 +37,115 @@ pixel_title() {
 }
  
 # ══════════════════════════════════════════════════════════
-#  BOOT SEQUENCE — CINEMATIC INTRO + DIAGNOSTICS
+#  ANIMATION HELPERS
 # ══════════════════════════════════════════════════════════
  
-# ── Glitch noise strings (random-looking junk that resolves to title) ──
+_type_effect() {
+    local text="$1" color="${2:-$WH}"
+    printf "%s" "$color"
+    for (( i=0; i<${#text}; i++ )); do printf "%s" "${text:$i:1}"; sleep 0.016; done
+    printf "%s\n" "$N"
+}
+ 
 _glitch_flash() {
     local -a noise=(
-        "  ▓░▒▓░▒▓▓░▒▓░▒▒░▓▒░▓▒▓░▒▓▒▓░▒▓░▒▓░▒▓░▒▓▒░▒▓░▒▓▒░▓▒░▓░▒▓▒░▓▒░▒▓░▒▓░▒▓▒▓░▒▓░▒▓░▒▓░▒▓▒░▒▓░▒▓▒░"
-        "  ░▒▓▒░▒▓░▒▒▓░▒▓░▒▓░▒▓░▒▓▒░▓░▒▓▒░▓░▒▓░▒▓▒░▒▓░▒▓░▒▓░▒▓▒░▓░▒▓░▒▓░▒▓░▒▓▒░▓░▒▓░▒▓░▒▓░▒▓▒░▓░▒▓░▒"
-        "  ▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░▒░"
-        "  ╬╫╪╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╪╬╫"
+        '  ╬╫╪╬╫╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╬╫╪╬╫╪╬╫╬╫╪╬╫╪'
+        '  ▓░▒▓▒░▓░▒▓▒░▒▓░▒▓▒░▓░▒▓▒░▒▓░▒▓▒░▓░▒▓▒░▒▓░▒▓▒░▓░▒▓▒░▒▓░▒▓▒░▓░▒▓▒░▒▓░▒▓▒░▓░▒▓▒░▒▓░▒▓▒'
+        '  ░▒▓░▒▓▒░▒▓░▒▓▒░▓▒░▒▓░▒▓▒░▒▓░▒▓▒░▓▒░▒▓░▒▓▒░▒▓░▒▓▒░▓▒░▒▓░▒▓▒░▒▓░▒▓▒░▓▒░▒▓░▒▓▒░▒▓░▒▓▒░'
+        '  ▒░▒░▒░▒▒░▒░▒░▒░▒▒░▒░▒░▒░▒▒░▒░▒░▒░▒▒░▒░▒░▒░▒▒░▒░▒░▒░▒▒░▒░▒░▒░▒▒░▒░▒░▒░▒▒░▒░▒░▒░▒▒░▒'
+        '  ╬╫╪▓░▒╬╫▒░▓╬╫╪▓░▒╬╫▒░▓╬╫╪▓░▒╬╫▒░▓╬╫╪▓░▒╬╫▒░▓╬╫╪▓░▒╬╫▒░▓╬╫╪▓░▒╬╫▒░▓╬╫╪▓░▒╬╫▒░▓╬╫╪▓░'
+        '  ░▒▓▒╫╬╪░▒▓▒╫╬╪░▒▓▒╫╬╪░▒▓▒╫╬╪░▒▓▒╫╬╪░▒▓▒╫╬╪░▒▓▒╫╬╪░▒▓▒╫╬╪░▒▓▒╫╬╪░▒▓▒╫╬╪░▒▓▒╫╬╪░▒▓▒╫'
     )
-    local colors=("${RE}" "${YE}" "${PU}" "${CY}" "${GR}")
+    local -a cols=("${RE}" "${YE}" "${PU}" "${CY}" "${GR}" "${MG}" "${AQ}" "${OR}")
     local c=0
     for n in "${noise[@]}"; do
-        printf "\r${colors[$c]}${BD}%s${N}" "$n"
-        c=$(( (c+1) % 5 ))
-        sleep 0.04
+        printf "\r${cols[$c]}${BD}%s${N}" "$n"
+        c=$(( (c+1) % 8 ))
+        sleep 0.045
     done
-    printf "\r%100s\r" " "   # clear line
+    printf "\r%110s\r" " "
 }
  
-# ── Pulsing diamond spinner for ~N frames ──
-_diamond_pulse() {
-    local frames=("$1")
-    local -a gems=('◇' '◈' '◆' '◈' '◇' '◆' '◈' '◆')
-    local -a cols=("${CY}" "${PU}" "${GR}" "${YE}" "${CY}" "${RE}" "${PU}" "${GR}")
-    for (( f=0; f<${1:-8}; f++ )); do
-        printf "\r  ${cols[$((f%8))]}${BD}${gems[$((f%8))]}  ProXLegendYT  NODE ${VERSION}  —  CRYSTAL EDITION${N}   "
-        sleep 0.09
-    done
-    printf "\r%70s\r" " "
-}
- 
-# ── Draw a border box line-by-line ──
-_draw_border() {
-    local w=105
-    local top="${CY}${BD}  ╔" mid="${CY}${BD}  ║" bot="${CY}${BD}  ╚"
-    # top bar
-    printf "%s" "$top"
-    for (( i=0; i<w; i++ )); do printf "═"; sleep 0.003; done
-    printf "╗${N}\n"
-    # bottom bar  (called after content)
-}
-_draw_border_bottom() {
-    local w=105
-    printf "${CY}${BD}  ╚"
-    for (( i=0; i<w; i++ )); do printf "═"; sleep 0.003; done
-    printf "╝${N}\n"
-}
- 
-# ── Scan bar that sweeps left→right under the title ──
 _scan_bar() {
-    local width=105 color="${1:-$CY}"
+    local width=105
     printf "  "
     for (( i=0; i<width; i++ )); do
-        if   (( i < width/3 ));        then printf "${RE}${BD}▓${N}"
-        elif (( i < width*2/3 ));      then printf "${YE}${BD}▓${N}"
-        else                                 printf "${GR}${BD}▓${N}"
-        fi
-        sleep 0.006
+        local seg=$(( i * 7 / width ))
+        case $seg in
+            0) printf "${RE}${BD}█${N}" ;;
+            1) printf "${OR}${BD}█${N}" ;;
+            2) printf "${YE}${BD}█${N}" ;;
+            3) printf "${GR}${BD}█${N}" ;;
+            4) printf "${CY}${BD}█${N}" ;;
+            5) printf "${LB}${BD}█${N}" ;;
+            *) printf "${PU}${BD}█${N}" ;;
+        esac
+        sleep 0.005
     done
     echo ""
-    sleep 0.05
-    # Reverse wipe (fade out)
+    sleep 0.04
     printf "  "
-    for (( i=0; i<width; i++ )); do printf "${BK}░${N}"; sleep 0.004; done
+    for (( i=0; i<width; i++ )); do printf "${BK}░${N}"; sleep 0.003; done
     echo ""
 }
  
-# ── Badge pop: lights up 3 status tags sequentially ──
 _badge_pop() {
-    # Pre-draw all dim
-    printf "\n"
-    printf "  ${BK}[ %-12s ]${N}   ${BK}[ %-12s ]${N}   ${BK}[ %-12s ]${N}\n" \
-        "  SYSTEM  " "  SECURE  " "  ONLINE  "
-    sleep 0.25
- 
-    # Light up one by one using cursor-up + rewrite
-    # Badge 1
+    echo ""
+    printf "  ${BK}▌ %-14s▐${N}   ${BK}▌ %-14s▐${N}   ${BK}▌ %-14s▐${N}\n" \
+        "  SYSTEM    " "  SECURE    " "  ONLINE    "
+    sleep 0.22
     printf "\033[1A\r"
-    printf "  ${GR}${BD}[ ✔ SYSTEM   ]${N}   ${BK}[ %-12s ]${N}   ${BK}[ %-12s ]${N}\n" \
-        "  SECURE  " "  ONLINE  "
-    sleep 0.25
- 
-    # Badge 2
+    printf "  ${GR}${BD}▌ ✔  SYSTEM     ▐${N}   ${BK}▌ %-14s▐${N}   ${BK}▌ %-14s▐${N}\n" \
+        "  SECURE    " "  ONLINE    "
+    sleep 0.22
     printf "\033[1A\r"
-    printf "  ${GR}${BD}[ ✔ SYSTEM   ]${N}   ${CY}${BD}[ ✔ SECURE   ]${N}   ${BK}[ %-12s ]${N}\n" \
-        "  ONLINE  "
-    sleep 0.25
- 
-    # Badge 3
+    printf "  ${GR}${BD}▌ ✔  SYSTEM     ▐${N}   ${CY}${BD}▌ ✔  SECURE     ▐${N}   ${BK}▌ %-14s▐${N}\n" \
+        "  ONLINE    "
+    sleep 0.22
     printf "\033[1A\r"
-    printf "  ${GR}${BD}[ ✔ SYSTEM   ]${N}   ${CY}${BD}[ ✔ SECURE   ]${N}   ${PU}${BD}[ ✔ ONLINE   ]${N}\n"
-    sleep 0.2
+    printf "  ${GR}${BD}▌ ✔  SYSTEM     ▐${N}   ${CY}${BD}▌ ✔  SECURE     ▐${N}   ${YE}${BD}▌ ✔  ONLINE     ▐${N}\n"
+    sleep 0.18
     echo ""
 }
  
-# ── Launch fill bar (0→100%) ──
 _launch_bar() {
-    local label="${1:-LAUNCHING NODE ${VERSION}}" total=50
-    printf "\n  ${BD}${WH}%s${N}\n  ${BK}[${N}" "$label"
+    local label="${1:-LAUNCHING}" total=52
+    printf "  ${BD}${WH}%s${N}\n  ${BK}[${N}" "$label"
     for (( i=0; i<total; i++ )); do
         local pct=$(( (i+1)*100/total ))
-        if   (( pct < 30 ));  then printf "${RE}${BD}█${N}"
-        elif (( pct < 65 ));  then printf "${YE}${BD}█${N}"
-        elif (( pct < 90 ));  then printf "${CY}${BD}█${N}"
+        if   (( pct < 20 ));  then printf "${RE}${BD}█${N}"
+        elif (( pct < 40 ));  then printf "${OR}${BD}█${N}"
+        elif (( pct < 60 ));  then printf "${YE}${BD}█${N}"
+        elif (( pct < 80 ));  then printf "${CY}${BD}█${N}"
         else                       printf "${GR}${BD}█${N}"
         fi
-        sleep 0.022
+        sleep 0.020
     done
-    printf "${BK}]${N}  ${GR}${BD}100%%${N}\n"
+    printf "${BK}]${N}  ${GR}${BD}100%%  READY${N}\n"
     sleep 0.1
 }
  
+_countdown() {
+    for i in 3 2 1; do
+        local filled=$(( (4-i) * 12 ))
+        local bar=""
+        for (( b=0; b<filled; b++ ));  do bar+="${GR}${BD}█${N}"; done
+        for (( b=filled; b<36; b++ )); do bar+="${BK}░${N}"; done
+        printf "\r  ${PU}${BD}Triggering execution in ${YE}${BD}%ds${N}  %b  " "$i" "$bar"
+        sleep 1
+    done
+    printf "\r  ${GR}${BD}✔  SYSTEM READY — Launching NODE %s${N}%40s\n\n" "$VERSION" " "
+    sleep 0.2
+}
+ 
+# ══════════════════════════════════════════════════════════
+#  CINEMATIC BOOT SEQUENCE  (single, no second screen)
+# ══════════════════════════════════════════════════════════
 boot_sequence() {
     clear
-    tput civis 2>/dev/null || true   # hide cursor during animation
+    tput civis 2>/dev/null || true
  
-    # ╔══════════════════════════════════════════════════════╗
-    #  PHASE 1 — GLITCH FLASH  (~0.25s)
-    # ╚══════════════════════════════════════════════════════╝
-    _glitch_flash
-    sleep 0.05
-    clear
- 
-    # ╔══════════════════════════════════════════════════════╗
-    #  PHASE 2 — TITLE REVEAL with color-cycling  (~0.6s)
-    # ╚══════════════════════════════════════════════════════╝
-    local -a title_lines=(
+    local -a LINES=(
         '  ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗     ███████╗ ██████╗ ███████╗███╗  ██╗██████╗ ██╗   ██╗████████╗'
         '  ██╔══██╗██╔══██╗██╔═══██╗╚██╗██╔╝██║     ██╔════╝██╔════╝ ██╔════╝████╗ ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝'
         '  ██████╔╝██████╔╝██║   ██║ ╚███╔╝ ██║     █████╗  ██║  ███╗█████╗  ██╔██╗██║██║  ██║ ╚████╔╝    ██║   '
@@ -173,136 +153,105 @@ boot_sequence() {
         '  ██║     ██║  ██║╚██████╔╝██╔╝ ██╗███████╗███████╗╚██████╔╝███████╗██║ ╚███║██████╔╝   ██║      ██║   '
         '  ╚═╝     ╚═╝  ╚═╝ ╚═════╝╚═╝   ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚══════╝╚═╝  ╚══╝╚═════╝    ╚═╝      ╚═╝   '
     )
-    local -a line_colors=("${CY}" "${PU}" "${CY}" "${PU}" "${CY}" "${PU}")
+    local -a LCOLS=("${CY}" "${LB}" "${PU}" "${MG}" "${CY}" "${LB}")
  
+    # ── PHASE 1: Rainbow glitch noise ────────────────────
+    _glitch_flash
+    sleep 0.06
+    clear
+ 
+    # ── PHASE 2: Title drops in line by line ─────────────
     echo ""
-    for (( i=0; i<${#title_lines[@]}; i++ )); do
-        echo -e "${line_colors[$i]}${BD}${title_lines[$i]}${N}"
-        sleep 0.055
+    for (( i=0; i<${#LINES[@]}; i++ )); do
+        echo -e "${LCOLS[$i]}${BD}${LINES[$i]}${N}"
+        sleep 0.052
     done
-    echo -e "${N}"
- 
-    # ╔══════════════════════════════════════════════════════╗
-    #  PHASE 3 — SCAN BAR sweeps under the title  (~0.8s)
-    # ╚══════════════════════════════════════════════════════╝
-    _scan_bar
-    sleep 0.05
- 
-    # ╔══════════════════════════════════════════════════════╗
-    #  PHASE 4 — BRANDING LINE with typewriter  (~0.5s)
-    # ╚══════════════════════════════════════════════════════╝
-    local now
-    now=$(date '+%H:%M:%S')
-    printf "  "
-    _type_effect "💎  ProXLegendYT  ·  NODE ${VERSION}  ·  ${CODENAME} EDITION  ·  ${now}" "${YE}"
-    sleep 0.05
- 
-    # Sub-info row
-    echo -e "  ${BK}Author: ProXLegendYT   |   Crystal SMP Community   |   ${DISCORD}${N}"
     echo ""
  
-    # ╔══════════════════════════════════════════════════════╗
-    #  PHASE 5 — STATUS BADGE POP-IN  (~0.9s)
-    # ╚══════════════════════════════════════════════════════╝
+    # ── PHASE 3: Rainbow scan bar ────────────────────────
+    _scan_bar
+    sleep 0.04
+ 
+    # ── PHASE 4: Branding typewriter ─────────────────────
+    local NOW; NOW=$(date '+%H:%M:%S')
+    printf "  "
+    _type_effect "💎  ProXLegendYT  ·  NODE ${VERSION}  ·  ${CODENAME} EDITION  ·  ${NOW}" "${YE}${BD}"
+    echo -e "  ${BK}  Author: ProXLegendYT   ·   Crystal SMP Community   ·   ${DISCORD}${N}"
+    echo ""
+ 
+    # ── PHASE 5: Pulsing rainbow diamond spinner ─────────
+    local -a GEMS=('◇' '◈' '◆' '◈' '◇' '◆' '◈' '◆' '◇' '◈' '◆' '◈' '◇' '◆' '◈' '◆')
+    local -a GCOLS=("${CY}" "${PU}" "${GR}" "${YE}" "${RE}" "${CY}" "${MG}" "${AQ}" "${PU}" "${GR}" "${YE}" "${CY}" "${OR}" "${PU}" "${GR}" "${CY}")
+    for (( f=0; f<16; f++ )); do
+        printf "\r  ${GCOLS[$f]}${BD}${GEMS[$f]}  ProXLegendYT  ·  NODE ${VERSION}  ·  CRYSTAL EDITION${N}   "
+        sleep 0.07
+    done
+    printf "\r%80s\r" " "
+    echo ""
+ 
+    # ── PHASE 6: Status badge pop-in ─────────────────────
     _badge_pop
  
-    # ╔══════════════════════════════════════════════════════╗
-    #  PHASE 6 — LAUNCH BAR  (~1.2s)
-    # ╚══════════════════════════════════════════════════════╝
-    _launch_bar "  INITIALIZING NODE ${VERSION}  ·  CRYSTAL UPLINK"
-    sleep 0.15
+    # ── PHASE 7: Colorful launch fill bar ────────────────
+    _launch_bar "  INITIALIZING  NODE ${VERSION}  ·  CRYSTAL UPLINK"
+    echo ""
  
-    echo -e "\n  ${GR}${BD}✔  BOOT COMPLETE — SYSTEM IS LIVE${N}"
-    sleep 0.4
- 
-    # ══════════════════════════════════════════════════════
-    # Transition: clear → diagnostics screen
-    # ══════════════════════════════════════════════════════
+    # ── PHASE 8: Boot complete flash ─────────────────────
+    for c in "${GR}" "${CY}" "${YE}" "${GR}"; do
+        printf "\r  ${c}${BD}✔  BOOT COMPLETE — SYSTEM IS LIVE${N}   "
+        sleep 0.1
+    done
+    echo ""
     sleep 0.3
+ 
+    # ── PHASE 9: Diagnostics ─────────────────────────────
     clear
-    tput cnorm 2>/dev/null || true   # restore cursor
+    tput cnorm 2>/dev/null || true
  
-    # ────────────────────────────────────────────────────
-    # DIAGNOSTICS SCREEN
-    # ────────────────────────────────────────────────────
-    echo -e "${CY}${BD}"
-    echo '  ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗     ███████╗ ██████╗ ███████╗███╗  ██╗██████╗ ██╗   ██╗████████╗'
-    echo '  ██╔══██╗██╔══██╗██╔═══██╗╚██╗██╔╝██║     ██╔════╝██╔════╝ ██╔════╝████╗ ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝'
-    echo '  ██████╔╝██████╔╝██║   ██║ ╚███╔╝ ██║     █████╗  ██║  ███╗█████╗  ██╔██╗██║██║  ██║ ╚████╔╝    ██║   '
-    echo '  ██╔═══╝ ██╔══██╗██║   ██║ ██╔██╗ ██║     ██╔══╝  ██║   ██║██╔══╝  ██║╚████║██║  ██║  ╚██╔╝     ██║   '
-    echo '  ██║     ██║  ██║╚██████╔╝██╔╝ ██╗███████╗███████╗╚██████╔╝███████╗██║ ╚███║██████╔╝   ██║      ██║   '
-    echo '  ╚═╝     ╚═╝  ╚═╝ ╚═════╝╚═╝   ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚══════╝╚═╝  ╚══╝╚═════╝    ╚═╝      ╚═╝   '
-    echo -e "${N}"
- 
-    echo -e "  ${YE}${BD}💎 ProXLegendYT NODE ${VERSION}${N}  ${BK}|${N}  ${AQ}${CODENAME} UPLINK${N}  ${BK}|${N}  ${WH}$(date '+%H:%M:%S')${N}"
+    echo ""
+    for (( i=0; i<${#LINES[@]}; i++ )); do
+        echo -e "${LCOLS[$i]}${BD}${LINES[$i]}${N}"
+    done
+    echo ""
+    echo -e "  ${YE}${BD}💎 ProXLegendYT NODE ${VERSION}${N}  ${BK}│${N}  ${AQ}${CODENAME} UPLINK${N}  ${BK}│${N}  ${WH}$(date '+%H:%M:%S')${N}"
     echo -e "  ${BK}────────────────────────────────────────────────────────────────────${N}"
     echo ""
  
-    # Network Route Diagnostics
     local pub_ip gw hn
     pub_ip=$(curl -s --max-time 3 ifconfig.me 2>/dev/null || echo "N/A")
     gw=$(ip route | awk '/default/{print $3; exit}' 2>/dev/null || echo "N/A")
     hn=$(hostname 2>/dev/null || echo "localhost")
  
     echo -e "  ${CY}${BD}NETWORK ROUTE DIAGNOSTICS${N}"
-    sleep 0.06
-    printf  "  ${BK}├─${N} Public Endpoint   ${BK}:${N}  "
-    _type_effect "${pub_ip}" "${GR}"
     sleep 0.05
-    printf  "  ${BK}├─${N} Local Gateway     ${BK}:${N}  "
-    _type_effect "${gw}" "${CY}"
-    sleep 0.05
-    printf  "  ${BK}├─${N} Target Host       ${BK}:${N}  "
-    _type_effect "${hn}" "${YE}"
-    sleep 0.05
-    printf  "  ${BK}└─${N} Security Level    ${BK}:${N}  "
-    _type_effect "SSH V-CRYSTAL" "${PU}"
+    printf  "  ${BK}├─${N} ${WH}Public Endpoint   ${BK}:${N}  "; _type_effect "${pub_ip}"     "${GR}${BD}"
+    sleep 0.04
+    printf  "  ${BK}├─${N} ${WH}Local Gateway     ${BK}:${N}  "; _type_effect "${gw}"         "${CY}${BD}"
+    sleep 0.04
+    printf  "  ${BK}├─${N} ${WH}Target Host       ${BK}:${N}  "; _type_effect "${hn}"         "${YE}${BD}"
+    sleep 0.04
+    printf  "  ${BK}└─${N} ${WH}Security Level    ${BK}:${N}  "; _type_effect "SSH V-CRYSTAL"  "${PU}${BD}"
     echo ""
-    sleep 0.15
- 
-    # Auth sequence
-    echo -e "  ${YE}${BD}[1/2] AUTHENTICATION SEQUENCE${N}"
-    sleep 0.08
-    printf  "  ${BK}└─${N} Linking Credentials...  "
-    sleep 0.35
-    echo -e "${GR}${BD}SUCCESS${N}"
     sleep 0.12
  
-    # Uplink protocol
+    echo -e "  ${YE}${BD}[1/2] AUTHENTICATION SEQUENCE${N}"
+    sleep 0.07
+    printf  "  ${BK}└─${N} ${WH}Linking Credentials...  ${N}"; sleep 0.32; echo -e "${GR}${BD}SUCCESS${N}"
+    sleep 0.1
+ 
     echo ""
     echo -e "  ${YE}${BD}[2/2] PROXLEGENDYT UPLINK PROTOCOL${N}"
-    sleep 0.08
-    printf  "  ${BK}├─${N} Establishing Connection...  "
-    sleep 0.4
-    echo -e "${GR}${BD}CONNECTED${N}"
-    sleep 0.08
-    printf  "  ${BK}└─${N} Agent Status:  "
-    sleep 0.25
-    echo -e "${CY}${BD}AUTHORIZED${N}"
-    sleep 0.12
+    sleep 0.07
+    printf  "  ${BK}├─${N} ${WH}Establishing Connection...  ${N}"; sleep 0.38; echo -e "${GR}${BD}CONNECTED${N}"
+    sleep 0.07
+    printf  "  ${BK}└─${N} ${WH}Agent Status:  ${N}"; sleep 0.22; echo -e "${CY}${BD}AUTHORIZED${N}"
+    sleep 0.1
  
     echo ""
     echo -e "  ${BK}────────────────────────────────────────────────────────────────────${N}"
     echo ""
  
-    # Animated countdown
-    for i in 3 2 1; do
-        local bar=""
-        local filled=$(( (4-i) * 12 ))
-        for (( b=0; b<filled; b++ )); do bar+="${GR}█${N}"; done
-        for (( b=filled; b<36; b++ )); do bar+="${BK}░${N}"; done
-        printf "\r  ${PU}${BD}Triggering execution in ${YE}${BD}${i}s${N}  ${bar}  "
-        sleep 1
-    done
-    printf "\r  ${GR}${BD}✔  SYSTEM READY — Launching NODE ${VERSION}${N}                              \n\n"
-    sleep 0.25
-}
- 
-_type_effect() {
-    local text="$1" color="${2:-$WH}"
-    printf "%s" "$color"
-    for (( i=0; i<${#text}; i++ )); do printf "%s" "${text:$i:1}"; sleep 0.018; done
-    printf "%s\n" "$N"
+    _countdown
 }
  
 # ══════════════════════════════════════════════════════════
@@ -311,18 +260,15 @@ _type_effect() {
 get_cpu() {
     local -a a b
     local ta=0 tb=0 dt di v
-    read -ra a < /proc/stat
-    sleep 0.1
-    read -ra b < /proc/stat
+    read -ra a < /proc/stat; sleep 0.1; read -ra b < /proc/stat
     for v in "${a[@]:1}"; do (( ta += v )) || true; done
     for v in "${b[@]:1}"; do (( tb += v )) || true; done
-    dt=$(( tb - ta ))
-    di=$(( b[4] - a[4] ))
+    dt=$(( tb - ta )); di=$(( b[4] - a[4] ))
     (( dt > 0 )) && echo $(( (dt - di) * 100 / dt )) || echo 0
 }
  
 get_ram() {
-    awk '/^MemTotal/{t=$2} /^MemAvailable/{a=$2} END{printf "%.0f",(t-a)/t*100}' \
+    awk '/^MemTotal/{t=$2}/^MemAvailable/{a=$2}END{printf "%.0f",(t-a)/t*100}' \
         /proc/meminfo 2>/dev/null || echo 0
 }
  
@@ -331,28 +277,20 @@ get_net() {
     for iface in /sys/class/net/*; do
         [[ "$(basename "$iface")" == "lo" ]] && continue
         state=$(< "$iface/operstate" 2>/dev/null) || continue
-        if [[ "$state" == "up" ]]; then echo "ONLINE"; return; fi
+        [[ "$state" == "up" ]] && { echo "ONLINE"; return; }
     done
     echo "OFFLINE"
 }
  
 get_uptime() {
-    local secs mins hrs
-    secs=$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)
-    hrs=$(( secs / 3600 ))
-    mins=$(( (secs % 3600) / 60 ))
-    printf "%dh %dm" "$hrs" "$mins"
+    local secs; secs=$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)
+    printf "%dh %dm" "$(( secs/3600 ))" "$(( (secs%3600)/60 ))"
 }
  
 get_proxmox_status() {
-    if ! command -v docker &>/dev/null; then
-        echo "${DM}○ DOCKER NOT FOUND${N}"; return
-    fi
-    if ! docker inspect proxmoxve &>/dev/null 2>&1; then
-        echo "${DM}○ NOT DEPLOYED${N}"; return
-    fi
-    local st
-    st=$(docker inspect -f '{{.State.Status}}' proxmoxve 2>/dev/null)
+    if ! command -v docker &>/dev/null; then echo "${DM}○ DOCKER NOT FOUND${N}"; return; fi
+    if ! docker inspect proxmoxve &>/dev/null 2>&1; then echo "${DM}○ NOT DEPLOYED${N}"; return; fi
+    local st; st=$(docker inspect -f '{{.State.Status}}' proxmoxve 2>/dev/null)
     case "$st" in
         running) echo "${GR}${BD}● RUNNING${N}" ;;
         exited)  echo "${YE}${BD}○ STOPPED${N}" ;;
@@ -361,34 +299,30 @@ get_proxmox_status() {
 }
  
 # ══════════════════════════════════════════════════════════
-#  SYSTEM HEALTH DASHBOARD
+#  SYSTEM HEALTH BAR
 # ══════════════════════════════════════════════════════════
 sys_health() {
     local cpu ram net upt
-    cpu=$(get_cpu)
-    ram=$(get_ram)
-    net=$(get_net)
-    upt=$(get_uptime)
+    cpu=$(get_cpu); ram=$(get_ram); net=$(get_net); upt=$(get_uptime)
  
     local cpu_c="${GR}" ram_c="${GR}" net_c="${GR}" net_ic="●"
     (( cpu > 79 )) && cpu_c="${RE}" || (( cpu > 49 )) && cpu_c="${YE}" || true
     (( ram > 79 )) && ram_c="${RE}" || (( ram > 49 )) && ram_c="${YE}" || true
     [[ "$net" == "OFFLINE" ]] && { net_c="${RE}"; net_ic="○"; }
  
-    # Mini gauge bars
     local cpu_bar="" ram_bar=""
     local cpu_fill=$(( cpu * 20 / 100 )) ram_fill=$(( ram * 20 / 100 ))
     for (( i=0; i<20; i++ )); do
-        if (( i < cpu_fill )); then cpu_bar+="${cpu_c}█${N}"; else cpu_bar+="${BK}░${N}"; fi
-        if (( i < ram_fill )); then ram_bar+="${ram_c}█${N}"; else ram_bar+="${BK}░${N}"; fi
+        (( i < cpu_fill )) && cpu_bar+="${cpu_c}█${N}" || cpu_bar+="${BK}░${N}"
+        (( i < ram_fill )) && ram_bar+="${ram_c}█${N}" || ram_bar+="${BK}░${N}"
     done
  
     echo -e "  ${BK}╔══════════════════════════════════════════════════════════════╗${N}"
-    echo -e "  ${BK}║${N}  ${BD}${WH}SYSTEM HEALTH                              ${DM}uptime: ${upt}${N}  ${BK}║${N}"
+    echo -e "  ${BK}║${N}  ${BD}${WH}SYSTEM HEALTH${N}                              ${DM}uptime: ${upt}${N}  ${BK}║${N}"
     echo -e "  ${BK}╠══════════════════════════════════════════════════════════════╣${N}"
-    printf  "  ${BK}║${N}  CPU  ${cpu_bar}  ${cpu_c}${BD}%3d%%${N}  ${BK}║${N}\n" "$cpu"
-    printf  "  ${BK}║${N}  RAM  ${ram_bar}  ${ram_c}${BD}%3d%%${N}  ${BK}║${N}\n" "$ram"
-    printf  "  ${BK}║${N}  NET  ${net_c}${BD}${net_ic} %-10s${N}                               ${BK}║${N}\n" "$net"
+    printf  "  ${BK}║${N}  ${CY}CPU${N}  %b  ${cpu_c}${BD}%3d%%${N}                       ${BK}║${N}\n" "$cpu_bar" "$cpu"
+    printf  "  ${BK}║${N}  ${YE}RAM${N}  %b  ${ram_c}${BD}%3d%%${N}                       ${BK}║${N}\n" "$ram_bar" "$ram"
+    printf  "  ${BK}║${N}  ${PU}NET${N}  ${net_c}${BD}%s %-8s${N}                              ${BK}║${N}\n" "$net_ic" "$net"
     echo -e "  ${BK}╚══════════════════════════════════════════════════════════════╝${N}"
 }
  
@@ -396,12 +330,11 @@ sys_health() {
 #  UI HELPERS
 # ══════════════════════════════════════════════════════════
 spinner() {
-    local msg="$1"
-    local pid=$!
-    local i=0
+    local msg="$1"; local pid=$!; local i=0
     local -a f=('⣾' '⣽' '⣻' '⢿' '⡿' '⣟' '⣯' '⣷')
+    local -a fc=("${CY}" "${PU}" "${YE}" "${GR}" "${CY}" "${RE}" "${PU}" "${AQ}")
     while kill -0 "$pid" 2>/dev/null; do
-        printf "\r  ${CY}${f[$i]}${N}  ${WH}%s${N}" "$msg"
+        printf "\r  ${fc[$i]}${f[$i]}${N}  ${WH}%s${N}" "$msg"
         i=$(( (i+1) % 8 )); sleep 0.06
     done
     printf "\r  ${GR}${BD}✔${N}  ${WH}%s${N}\n" "$msg"
@@ -416,48 +349,37 @@ typewriter() {
  
 progress_bar() {
     local lbl="${1:-Working}" width=40
-    printf "\n  ${CY}${BD}%s${N}\n  " "$lbl"
-    echo -ne "${BK}["
+    printf "\n  ${CY}${BD}%s${N}\n  ${BK}[${N}" "$lbl"
     for (( i=0; i<width; i++ )); do
-        local pct=$(( (i+1) * 100 / width ))
-        if   (( pct < 40 )); then echo -ne "${RE}█${N}"
-        elif (( pct < 75 )); then echo -ne "${YE}█${N}"
-        else                       echo -ne "${GR}█${N}"
+        local pct=$(( (i+1)*100/width ))
+        if   (( pct < 25 )); then printf "${RE}${BD}█${N}"
+        elif (( pct < 50 )); then printf "${YE}${BD}█${N}"
+        elif (( pct < 80 )); then printf "${CY}${BD}█${N}"
+        else                      printf "${GR}${BD}█${N}"
         fi
         sleep 0.018
     done
     echo -e "${BK}]${N}  ${GR}${BD}Done!${N}\n"
 }
  
-div()  {
-    echo -e "  ${BK}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${N}"
-}
-tdiv() {
-    echo -e "  ${BK}┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄${N}"
-}
+div()  { echo -e "  ${BK}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${N}"; }
+tdiv() { echo -e "  ${BK}┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄${N}"; }
  
 section() {
-    local title="$1"
     echo ""
     echo -e "  ${CY}╔══════════════════════════════════════════════════════════════╗${N}"
-    printf  "  ${CY}║${N}  ${BD}${WH}%-60s${N}  ${CY}║${N}\n" "$title"
+    printf  "  ${CY}║${N}  ${BD}${WH}%-60s${N}  ${CY}║${N}\n" "$1"
     echo -e "  ${CY}╚══════════════════════════════════════════════════════════════╝${N}"
     echo ""
 }
  
 sub_header() {
     clear; pixel_title
-    local now
-    now=$(date '+%H:%M:%S')
+    local now; now=$(date '+%H:%M:%S')
     echo -e "  ${PU}╔══════════════════════════════════════════════════════════════╗${N}"
-    printf  "  ${PU}║${N}  ${BL}${PU}💎${N}  ${BD}${WH}ProXLegendYT${N}  ${BK}│${N}  ${CY}NODE ${VERSION}${N}  ${BK}│${N}  ${GR}● ONLINE${N}  ${BK}│${N}  ${DM}%s${N}  ${PU}║${N}\n" "$now"
+    printf  "  ${PU}║${N}  ${BL}${PU}💎${N}  ${BD}${WH}ProXLegendYT${N}  ${BK}│${N}  ${CY}NODE ${VERSION}${N}  ${BK}│${N}  ${GR}● ONLINE${N}  ${BK}│${N}  ${DM}%s${N}         ${PU}║${N}\n" "$now"
     echo -e "  ${PU}╚══════════════════════════════════════════════════════════════╝${N}"
     echo ""
-}
- 
-badge() {
-    local label="$1" color="${2:-$CY}"
-    printf "  ${color}${BD}[ %s ]${N}\n" "$label"
 }
  
 pause() {
@@ -473,23 +395,22 @@ confirm() {
 }
  
 # ══════════════════════════════════════════════════════════
-#  MAIN MENU
+#  MAIN MENU  (original style — colorful)
 # ══════════════════════════════════════════════════════════
 main_menu() {
     clear; pixel_title
     sys_health
     echo ""
- 
-    echo -e "  ${CY}${BD}◈ DEPLOYMENT SERVICES${N}                    ${PU}${BD}◈ TOOLS${N}"
-    echo -e "  ${BK}┌──────────────────────────────────────────────────────────────┐${N}"
-    echo -e "  ${BK}│${N}  ${YE}[1]${N}  ${WH}VPS Manager       ${BK}│${N}  ${YE}[5]${N}  ${WH}Blueprint Installer ${BK}│${N}"
-    echo -e "  ${BK}│${N}  ${YE}[2]${N}  ${WH}Panel Manager     ${BK}│${N}  ${YE}[6]${N}  ${WH}Cloudflare Tunnel   ${BK}│${N}"
-    echo -e "  ${BK}│${N}  ${YE}[3]${N}  ${WH}Wings Installer   ${BK}│${N}  ${YE}[7]${N}  ${WH}Discord Community   ${BK}│${N}"
-    echo -e "  ${BK}│${N}  ${YE}[4]${N}  ${WH}Main Toolbox      ${BK}│${N}  ${RE}[0]${N}  ${WH}Shutdown Node       ${BK}│${N}"
-    echo -e "  ${BK}└──────────────────────────────────────────────────────────────┘${N}"
+    echo -e "  ${CY}${BD}@ DEPLOYMENT SERVICES${N}"
+    echo -e "  ${BK}└─${N}  ${YE}${BD}[1]${N} ${WH}VPS              ${YE}${BD}[5]${N} ${WH}Blueprint${N}"
+    echo -e "      ${YE}${BD}[2]${N} ${WH}Panel            ${YE}${BD}[6]${N} ${WH}Cloudflare${N}"
+    echo -e "      ${YE}${BD}[3]${N} ${WH}Wings            ${YE}${BD}[7]${N} ${WH}Discord${N}"
+    echo ""
+    echo -e "  ${PU}${BD}@ MAINTENANCE${N}"
+    echo -e "  ${BK}└─${N}  ${YE}${BD}[4]${N} ${WH}Toolbox          ${BD}${RD}  ❮ ${RE}[0]${WH} SHUTDOWN ❯  ${N}"
     echo ""
     div
-    printf  "\n  ${GR}❯${N} ${BD}${WH}Select Command ${BK}(0-7)${WH}: ${N}"
+    printf "\n  ${GR}→${N} ${BD}${WH}Command (0-7): ${N}"
 }
  
 # ══════════════════════════════════════════════════════════
@@ -497,26 +418,21 @@ main_menu() {
 # ══════════════════════════════════════════════════════════
 vps_menu() {
     while true; do
-        sub_header
-        section "🖥️  VPS MANAGER"
+        sub_header; section "🖥️  VPS MANAGER"
         local px_stat; px_stat=$(get_proxmox_status)
- 
-        echo -e "  ${BK}┌──────────────────────────────────────────────────────────────┐${N}"
-        echo -e "  ${BK}│${N}  ${YE}[1]${N}  🖥️   ${WH}VM / KVM Installer${N}"
+        echo -e "  ${YE}${BD}  1${N}  ${BK}│${N}  🖥️   ${WH}VM / KVM Installer${N}"
         tdiv
-        echo -e "  ${BK}│${N}  ${YE}[2]${N}  🚀  ${WH}Deploy Proxmox VE${N}   ${DM}Status: ${N}${px_stat}"
+        echo -e "  ${YE}${BD}  2${N}  ${BK}│${N}  🚀  ${WH}Deploy Proxmox VE          ${DM}Status: ${N}${px_stat}"
         tdiv
-        echo -e "  ${BK}│${N}  ${YE}[3]${N}  📋  ${WH}Show Running Containers${N}"
+        echo -e "  ${YE}${BD}  3${N}  ${BK}│${N}  📋  ${WH}Show Running Containers${N}"
         tdiv
-        echo -e "  ${BK}│${N}  ${YE}[4]${N}  🛑  ${WH}Stop Proxmox Container${N}"
+        echo -e "  ${YE}${BD}  4${N}  ${BK}│${N}  🛑  ${WH}Stop Proxmox Container${N}"
         tdiv
-        echo -e "  ${BK}│${N}  ${RE}[5]${N}  🗑️   ${WH}Remove Proxmox Container${N}"
+        echo -e "  ${RE}${BD}  5${N}  ${BK}│${N}  🗑️   ${WH}Remove Proxmox Container${N}"
         tdiv
-        echo -e "  ${BK}│${N}  ${RE}[0]${N}  ⬅️   ${WH}Back to Main Menu${N}"
-        echo -e "  ${BK}└──────────────────────────────────────────────────────────────┘${N}"
-        echo ""
-        printf "\n  ${GR}❯${N} ${BD}${WH}VPS Command: ${N}"
-        read -r vc
+        echo -e "  ${RE}${BD}  0${N}  ${BK}│${N}  ⬅️   ${WH}Back${N}"
+        div
+        printf "\n  ${GR}→${N} ${BD}${WH}VPS Command: ${N}"; read -r vc
  
         case $vc in
             1)
@@ -524,10 +440,9 @@ vps_menu() {
                 progress_bar "🔧  Loading KVM installer"
                 set +u
                 bash <(curl -fsSL https://raw.githubusercontent.com/prosixrapieryess-prog/Crystal-VM-KVM/main/mainmenu)
-                set -u
-                pause ;;
+                set -u; pause ;;
             2)
-                sub_header; section "🚀  Deploying Proxmox VE"
+                sub_header; section "🚀  Deploying Proxmox VE..."
                 progress_bar "📦  Pulling rtedpro/proxmox:9.0.11"
                 if docker run -itd \
                       --name proxmoxve --hostname pve --privileged \
@@ -540,9 +455,8 @@ vps_menu() {
                       -v /sys/kernel/debug:/sys/kernel/debug \
                       -p 8006:8006 --restart unless-stopped \
                       rtedpro/proxmox:9.0.11; then
-                    echo ""
-                    echo -e "  ${GR}${BD}✅  Proxmox VE launched!  $(get_proxmox_status)${N}"
-                    echo -e "  ${CY}   Access → ${WH}https://YOUR_SERVER_IP:8006${N}"
+                    echo -e "\n  ${GR}${BD}✅  Proxmox VE launched!  $(get_proxmox_status)${N}"
+                    echo -e "  ${CY}   Access → https://YOUR_SERVER_IP:8006${N}"
                     echo -e "  ${DM}   Login: root / (blank password first time)${N}"
                 else
                     echo -e "\n  ${RE}❌  Launch failed. Is Docker installed and running?${N}"
@@ -561,15 +475,15 @@ vps_menu() {
             4)
                 sub_header; section "🛑  Stop Proxmox Container"
                 docker stop proxmoxve 2>/dev/null \
-                    && echo -e "  ${GR}${BD}✔  Container stopped.${N}" \
+                    && echo -e "  ${GR}✔  Container stopped.${N}" \
                     || echo -e "  ${RE}❌  Not found or already stopped.${N}"
                 pause ;;
             5)
                 sub_header; section "🗑️  Remove Proxmox Container"
                 if confirm; then
                     docker stop proxmoxve 2>/dev/null || true
-                    docker rm   proxmoxve 2>/dev/null \
-                        && echo -e "  ${GR}${BD}✔  Container removed.${N}" \
+                    docker rm proxmoxve 2>/dev/null \
+                        && echo -e "  ${GR}✔  Container removed.${N}" \
                         || echo -e "  ${RE}❌  Container not found.${N}"
                 else
                     echo -e "  ${CY}Cancelled.${N}"
@@ -587,33 +501,29 @@ vps_menu() {
 ptero_menu() {
     while true; do
         sub_header; section "🧩  PANEL MANAGER"
- 
-        echo -e "  ${BK}┌──────────────────────────────────────────────────────────────┐${N}"
-        echo -e "  ${BK}│${N}  ${YE}[1]${N}  🧩  ${WH}Install Panels${N}"
+        echo -e "  ${YE}${BD}  1${N}  ${BK}│${N}  🧩  ${WH}Panels${N}"
         tdiv
-        echo -e "  ${BK}│${N}  ${YE}[2]${N}  👤  ${WH}Create Admin User${N}"
+        echo -e "  ${YE}${BD}  2${N}  ${BK}│${N}  👤  ${WH}Create Admin User${N}"
         tdiv
-        echo -e "  ${BK}│${N}  ${YE}[3]${N}  🔄  ${WH}Update Panel${N}"
+        echo -e "  ${YE}${BD}  3${N}  ${BK}│${N}  🔄  ${WH}Update Panel${N}"
         tdiv
-        echo -e "  ${BK}│${N}  ${YE}[4]${N}  🔒  ${WH}Install SSL${N}"
+        echo -e "  ${YE}${BD}  4${N}  ${BK}│${N}  🔒  ${WH}Install SSL${N}"
         tdiv
-        echo -e "  ${BK}│${N}  ${RE}[5]${N}  🗑️   ${WH}Uninstall Panel${N}"
+        echo -e "  ${RE}${BD}  5${N}  ${BK}│${N}  🗑️   ${WH}Uninstall Panel${N}"
         tdiv
-        echo -e "  ${BK}│${N}  ${RE}[0]${N}  ⬅️   ${WH}Back to Main Menu${N}"
-        echo -e "  ${BK}└──────────────────────────────────────────────────────────────┘${N}"
-        echo ""
-        printf "\n  ${GR}❯${N} ${BD}${WH}Panel Command: ${N}"; read -r pc
+        echo -e "  ${RE}${BD}  0${N}  ${BK}│${N}  ⬅️   ${WH}Back${N}"
+        div
+        printf "\n  ${GR}→${N} ${BD}${WH}Panel Command: ${N}"; read -r pc
  
         case $pc in
             1)
-                sub_header; section "🧩  Panels Installer"
-                progress_bar "📦  Fetching Panels installer"
+                sub_header; section "🧩  Panels..."
+                progress_bar "📦  Panels installer"
                 set +u
                 bash <(curl -s https://raw.githubusercontent.com/nobita329/hub/refs/heads/main/Codinghub/panel/run.sh)
-                set -u
-                pause ;;
+                set -u; pause ;;
             2)
-                sub_header; section "👤  Create Panel Admin User"
+                sub_header; section "👤  Create Panel User"
                 if [[ -d /var/www/pterodactyl ]]; then
                     cd /var/www/pterodactyl || { echo -e "  ${RE}❌  Cannot enter panel directory!${N}"; pause; continue; }
                     php artisan p:user:make
@@ -622,43 +532,39 @@ ptero_menu() {
                 fi
                 pause ;;
             3)
-                sub_header; section "🔄  Updating Panel"
+                sub_header; section "🔄  Updating Panel..."
                 if [[ ! -d /var/www/pterodactyl ]]; then
-                    echo -e "  ${RE}❌  Panel not found — install it first!${N}"
-                    pause; continue
+                    echo -e "  ${RE}❌  Panel not found — install it first!${N}"; pause; continue
                 fi
                 progress_bar "⬇️  Downloading latest release"
                 cd /var/www/pterodactyl || { echo -e "  ${RE}❌  Failed to enter panel directory!${N}"; pause; continue; }
                 php artisan down
                 if ! curl -fsSL -o panel.tar.gz \
                         https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz; then
-                    echo -e "  ${RE}❌  Download failed! Check your internet connection.${N}"
-                    php artisan up 2>/dev/null || true
-                    pause; continue
+                    echo -e "  ${RE}❌  Download failed!${N}"
+                    php artisan up 2>/dev/null || true; pause; continue
                 fi
                 if ! tar -xzf panel.tar.gz; then
-                    echo -e "  ${RE}❌  Archive extraction failed!${N}"
-                    php artisan up 2>/dev/null || true
-                    pause; continue
+                    echo -e "  ${RE}❌  Extraction failed!${N}"
+                    php artisan up 2>/dev/null || true; pause; continue
                 fi
                 rm -f panel.tar.gz
                 COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
                 php artisan migrate --seed --force && php artisan up
-                echo -e "\n  ${GR}${BD}✔  Panel updated successfully!${N}"
+                echo -e "\n  ${GR}✔  Panel updated successfully!${N}"
                 pause ;;
             4)
                 sub_header; section "🔒  SSL Certificate"
                 set +u
                 bash <(curl -fsSL https://raw.githubusercontent.com/nobita329/ptero/main/ptero/panel/pterodactyl/ssl.sh)
-                set -u
-                pause ;;
+                set -u; pause ;;
             5)
                 sub_header; section "🗑️  Uninstall Panel"
                 echo -e "  ${RE}${BD}⚠️  This will permanently delete the panel!${N}"
                 if confirm; then
-                    progress_bar "🗑️  Removing panel files"
+                    progress_bar "🗑️  Removing panel"
                     rm -rf /var/www/pterodactyl
-                    echo -e "  ${GR}${BD}✔  Panel removed.${N}"
+                    echo -e "  ${GR}✔  Panel removed.${N}"
                 else
                     echo -e "  ${CY}Cancelled.${N}"
                 fi
@@ -670,44 +576,38 @@ ptero_menu() {
 }
  
 # ══════════════════════════════════════════════════════════
-#  [6]  CLOUDFLARE TUNNEL MANAGER
+#  [6]  CLOUDFLARE
 # ══════════════════════════════════════════════════════════
 cloudflare_menu() {
     cf_header() {
         sub_header
         local arch svc_txt pid_txt up_txt
         arch=$(dpkg --print-architecture 2>/dev/null || uname -m)
-        svc_txt="${DM}NOT INSTALLED${N}"
-        pid_txt="${BK}---${N}"
-        up_txt="${BK}---${N}"
- 
+        svc_txt="${DM}NOT INSTALLED${N}"; pid_txt="${BK}---${N}"; up_txt="${BK}---${N}"
         if command -v cloudflared &>/dev/null; then
             if systemctl is-active --quiet cloudflared 2>/dev/null; then
-                svc_txt="${GR}${BD}● ACTIVE / RUNNING${N}"
+                svc_txt="${GR}${BD}ACTIVE ● RUNNING${N}"
                 pid_txt="${WH}$(pgrep -x cloudflared 2>/dev/null | head -1 || echo '---')${N}"
-                local raw_ts
-                raw_ts=$(systemctl show -p ActiveEnterTimestamp cloudflared 2>/dev/null)
+                local raw_ts; raw_ts=$(systemctl show -p ActiveEnterTimestamp cloudflared 2>/dev/null)
                 up_txt="${CY}${raw_ts#ActiveEnterTimestamp=}${N}"
             else
-                svc_txt="${RE}${BD}○ INACTIVE / STOPPED${N}"
+                svc_txt="${RE}${BD}INACTIVE ○ STOPPED${N}"
             fi
         fi
- 
         echo -e "  ${AQ}╔══════════════════════════════════════════════════════════════╗${N}"
         echo -e "  ${AQ}║${N}  ${BD}${CY}☁️   CLOUDFLARE TUNNEL MANAGER${N}                          ${AQ}║${N}"
         echo -e "  ${AQ}╚══════════════════════════════════════════════════════════════╝${N}"
         echo ""
-        echo -e "  ${BK}  🖥  Arch    :${N}  ${WH}${arch}${N}"
-        echo -e "  ${BK}  🔴  Status  :${N}  ${svc_txt}"
-        echo -e "  ${BK}  🔢  PID     :${N}  ${pid_txt}"
-        echo -e "  ${BK}  ⏱  Uptime  :${N}  ${up_txt}"
+        echo -e "  ${BK}🖥  Arch    :${N} ${WH}${arch}${N}"
+        echo -e "  ${BK}🔴  Status  :${N} ${svc_txt}"
+        echo -e "  ${BK}🔢  PID     :${N} ${pid_txt}"
+        echo -e "  ${BK}⏱  Uptime  :${N} ${up_txt}"
         echo ""; div; echo ""
     }
  
     cf_install() {
         cf_header; section "⚡  INSTALL / UPDATE TUNNEL"
- 
-        echo -e "  ${CY}[1/4]${N} ${WH}Configuring Cloudflare APT repo...${N}"
+        echo -e "  ${CY}[1/4]${N} Configuring Cloudflare APT repo..."
         (
             sudo mkdir -p --mode=0755 /usr/share/keyrings
             curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg \
@@ -717,7 +617,7 @@ cloudflare_menu() {
         ) &
         spinner "Configuring APT repo"
  
-        echo -e "\n  ${CY}[2/4]${N} ${WH}Installing cloudflared binary...${N}"
+        echo -e "\n  ${CY}[2/4]${N} Installing cloudflared binary..."
         (sudo apt-get update -qq >/dev/null && sudo apt-get install -y cloudflared -qq >/dev/null 2>&1) &
         spinner "Installing cloudflared"
  
@@ -725,7 +625,7 @@ cloudflare_menu() {
             echo -e "  ${RE}❌  Installation failed!${N}"; pause; return
         fi
  
-        echo -e "\n  ${CY}[3/4]${N} ${WH}Removing any old tunnel service...${N}"
+        echo -e "\n  ${CY}[3/4]${N} Removing any old tunnel service..."
         if systemctl list-units --type=service 2>/dev/null | grep -q cloudflared; then
             (sudo cloudflared service uninstall >/dev/null 2>&1) &
             spinner "Cleaning old service"
@@ -736,9 +636,9 @@ cloudflare_menu() {
         echo ""
         echo -e "  ${YE}┌──────────────────────────────────────────────────────────────┐${N}"
         echo -e "  ${YE}│${N}  ${BD}🔐  Paste your Tunnel Token below${N}                         ${YE}│${N}"
-        echo -e "  ${YE}│${N}  ${DM}(Paste the full 'sudo cloudflared...' command or token)${N}   ${YE}│${N}"
+        echo -e "  ${YE}│${N}  ${DM}(Paste the full 'sudo cloudflared...' command)${N}             ${YE}│${N}"
         echo -e "  ${YE}└──────────────────────────────────────────────────────────────┘${N}"
-        printf "\n  ${PU}❯  TOKEN: ${N}"; read -r raw_token
+        printf "\n  ${PU}➤  TOKEN: ${N}"; read -r raw_token
  
         local token
         token=$(echo "$raw_token" \
@@ -749,7 +649,7 @@ cloudflare_menu() {
             echo -e "  ${RE}❌  Token is empty! Aborting.${N}"; pause; return
         fi
  
-        echo -e "\n  ${CY}[4/4]${N} ${WH}Registering tunnel service...${N}"
+        echo -e "\n  ${CY}[4/4]${N} Registering tunnel service..."
         if sudo cloudflared service install "$token"; then
             progress_bar "🌐  Bringing tunnel online"
             if systemctl is-active --quiet cloudflared 2>/dev/null; then
@@ -767,7 +667,6 @@ cloudflare_menu() {
     cf_uninstall() {
         cf_header; section "🗑️  UNINSTALL CLOUDFLARE"
         echo -e "  ${RE}${BD}⚠️  Removes tunnel service, binary and APT repo!${N}"
-        echo ""
         if confirm; then
             (
                 sudo cloudflared service uninstall >/dev/null 2>&1 || true
@@ -776,7 +675,7 @@ cloudflare_menu() {
                 sudo rm -f /usr/share/keyrings/cloudflare-main.gpg
             ) &
             spinner "Removing Cloudflared"
-            echo -e "\n  ${GR}${BD}✔  Cloudflared fully removed.${N}"
+            echo -e "\n  ${GR}✔  Cloudflared fully removed.${N}"
         else
             echo -e "\n  ${CY}Cancelled.${N}"
         fi
@@ -785,15 +684,10 @@ cloudflare_menu() {
  
     while true; do
         cf_header
-        echo -e "  ${BK}┌──────────────────────────────────────────────────────────────┐${N}"
-        echo -e "  ${BK}│${N}  ${GR}[1]${N}  ☁️   ${WH}Install / Update Tunnel${N}"
-        tdiv
-        echo -e "  ${BK}│${N}  ${RE}[2]${N}  🗑️   ${WH}Uninstall Completely${N}"
-        tdiv
-        echo -e "  ${BK}│${N}  ${DM}[0]${N}  ⬅️   ${WH}Back to Main Menu${N}"
-        echo -e "  ${BK}└──────────────────────────────────────────────────────────────┘${N}"
-        echo ""
-        printf "\n  ${CY}root@cloudflare:~#${N} "; read -r cc
+        echo -e "  ${GR}${BD}  1${N}  ${BK}│${N}  ☁️   ${WH}Install / Update Tunnel${N}"; tdiv
+        echo -e "  ${RE}${BD}  2${N}  ${BK}│${N}  🗑️   ${WH}Uninstall Completely${N}";    tdiv
+        echo -e "  ${DM}  0${N}  ${BK}│${N}  ⬅️   ${WH}Back${N}"; div
+        printf "\n  ${PU}root@cloudflare:~# ${N}"; read -r cc
         case $cc in
             1) cf_install ;;
             2) cf_uninstall ;;
@@ -804,13 +698,10 @@ cloudflare_menu() {
 }
  
 # ══════════════════════════════════════════════════════════
-#  BOOT
+#  BOOT  →  MAIN LOOP
 # ══════════════════════════════════════════════════════════
 boot_sequence
  
-# ══════════════════════════════════════════════════════════
-#  MAIN LOOP
-# ══════════════════════════════════════════════════════════
 while true; do
     main_menu; read -r choice
     case $choice in
@@ -821,35 +712,30 @@ while true; do
             progress_bar "📦  Fetching Wings installer"
             set +u
             bash <(curl -s https://raw.githubusercontent.com/nobita329/ptero/refs/heads/main/ptero/wings/run.sh)
-            set -u
-            pause ;;
+            set -u; pause ;;
         4)
             sub_header; section "🧰  Main Toolbox"
             progress_bar "🔧  Loading tools"
             set +u
             bash <(curl -fsSL https://raw.githubusercontent.com/prosixrapieryess-prog/Host-Tools/main/mainmenu)
-            set -u
-            pause ;;
+            set -u; pause ;;
         5)
-            sub_header; section "🔷  Blueprint Installer"
+            sub_header; section "🔷  Blueprint"
             progress_bar "📦  Fetching Blueprint installer"
             set +u
             bash <(curl -s https://raw.githubusercontent.com/nobita329/ptero/refs/heads/main/ptero/thame/chang/dev.sh)
-            set -u
-            pause ;;
+            set -u; pause ;;
         6) cloudflare_menu ;;
         7)
             sub_header; section "💬  Discord Community"
             echo -e "  ${GR}${BD}  ${DISCORD}${N}"
-            echo -e "  ${DM}  Copy the link above and join our server!${N}"
+            echo -e "  ${DM}  Copy the link and join!${N}"
             pause ;;
         0)
             clear; pixel_title
-            echo -e "  ${PU}${BD}Thank you for using ProXLegendYT NODE!${N}"
-            echo ""
-            typewriter "  💎  ProXLegendYT — Signing off... See you next time! 🔥" "$GR"
-            echo ""
-            sleep 1; exit 0 ;;
+            echo -e "  ${PU}${BD}Thanks for using ProXLegendYT NODE!${N}"
+            typewriter "  💎  ProXLegendYT — Signing off... 🔥" "$GR"
+            sleep 1; echo ""; exit 0 ;;
         *)
             echo -e "\n  ${RE}❌  Invalid — choose 0-7.${N}"; sleep 1 ;;
     esac
