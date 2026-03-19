@@ -287,7 +287,7 @@ ptero_menu() {
                 sub_header; section "🧩  Installing Panel..."
                 progress_bar "📦  Fetching installer"
                 set +u
-                bash <(curl -fsSL https://raw.githubusercontent.com/nobita329/ptero/main/ptero/panel/pterodactyl/install.sh)
+                bash <(curl -s https://raw.githubusercontent.com/nobita329/hub/refs/heads/main/Codinghub/panel/run.sh)
                 set -u
                 pause ;;
             2)
