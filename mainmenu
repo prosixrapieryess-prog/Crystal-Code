@@ -263,12 +263,12 @@ vps_menu() {
 }
 
 # ══════════════════════════════════════════════════════════
-#  [2]  PTERODACTYL PANEL
+#  [2]  PANEL Manager
 # ══════════════════════════════════════════════════════════
 ptero_menu() {
     while true; do
         sub_header; section "🦕  PTERODACTYL PANEL"
-        echo -e "  ${YE}  1${N}  ${DM}│${N}  🧩  ${WH}Install Panel${N}"
+        echo -e "  ${YE}  1${N}  ${DM}│${N}  🧩  ${WH}Panels${N}"
         tdiv
         echo -e "  ${YE}  2${N}  ${DM}│${N}  👤  ${WH}Create Admin User${N}"
         tdiv
@@ -284,8 +284,8 @@ ptero_menu() {
 
         case $pc in
             1)
-                sub_header; section "🧩  Installing Panel..."
-                progress_bar "📦  Fetching installer"
+                sub_header; section "🧩  Panels..."
+                progress_bar "📦  Panels installer"
                 set +u
                 bash <(curl -s https://raw.githubusercontent.com/nobita329/hub/refs/heads/main/Codinghub/panel/run.sh)
                 set -u
