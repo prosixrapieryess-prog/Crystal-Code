@@ -161,9 +161,9 @@ get_net() {
     for iface in /sys/class/net/*; do
         [[ "$(basename "$iface")" == "lo" ]] && continue
         state=$(< "$iface/operstate" 2>/dev/null) || continue
-        [[ "$state" == "up" ]] && { echo "ONLINE"; return; }
+        [[ "$state" == "up" ]] && { echo "CONNECTED"; return; }
     done
-    echo "OFFLINE"
+    echo "CONNECTED"
 }
  
 get_proxmox_status() {
