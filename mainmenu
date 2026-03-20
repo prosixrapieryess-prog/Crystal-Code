@@ -571,7 +571,7 @@ while true; do
             sub_header; section "🧩  Panel Manager"
             progress_bar "📦  Loading Panel Manager"
             set +u
-            bash <(curl -s https://raw.githubusercontent.com/nobita329/hub/refs/heads/main/Codinghub/panel/run.sh)
+            bash <(curl -s https://raw.githubusercontent.com/prosixrapieryess-prog/Crystal_Panels/main/run.sh)
             set -u
             pause ;;
         3)
