@@ -690,7 +690,7 @@ while true; do
             sub_header; section "🔷  Blueprint"
             progress_bar "📦  Fetching Blueprint installer"
             set +u
-            bash <(curl -fsSL https://raw.githubusercontent.com/prosixrapieryess-prog/Crystal-Blueprint/main/dev.sh)
+            bash <(curl -fsSL https://raw.githubusercontent.com/prosixrapieryess-prog/Crystal-Blueprint/main/run.sh)
             set -u
             pause ;;
         6) cloudflare_menu ;;
